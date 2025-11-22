@@ -37,6 +37,7 @@ export function createStreams(
   } = params;
 
   let pollingStarted = false;
+  let uploadError: Error | null = null;
 
   // Reader для чтения ответа от LISTENER
   const reader = new ReadableStream({
@@ -44,6 +45,12 @@ export function createStreams(
       // Ждем пока данные будут загружены в хранилище
       while (!pollingStarted) {
         await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+
+      // Если была ошибка при загрузке данных, передаем ее сразу
+      if (uploadError) {
+        controller.error(uploadError);
+        return;
       }
 
       // Начинаем polling для получения ответа
@@ -80,8 +87,10 @@ export function createStreams(
         await uploadRequestData(requestId, dataBuffer, storageProvider, protocolPaths);
         onDataUploaded();
         pollingStarted = true;
-      } catch (_err) {
-        // Ошибка будет обработана в reader
+      } catch (err) {
+        // Сохраняем ошибку и устанавливаем флаг, чтобы reader мог ее обработать
+        uploadError = err instanceof Error ? err : new Error(String(err));
+        pollingStarted = true;
       }
     },
   }).getWriter();

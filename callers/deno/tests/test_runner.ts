@@ -17,3 +17,6 @@ import "./default-connection-handler.test.ts";
 import "./socks5-handler.test.ts";
 import "./socks5-server.test.ts";
 
+// YandexDiskConnectionHandler тесты
+import "./yandex-disk-connection-handler.test.ts";
+

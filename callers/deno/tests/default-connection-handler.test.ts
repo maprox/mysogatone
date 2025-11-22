@@ -35,9 +35,15 @@ Deno.test({
 }, async () => {
   const handler = new DefaultConnectionHandler();
   
+  // Добавляем таймаут, чтобы тест не зависал надолго
+  const connectPromise = handler.connect("192.0.2.0", 12345); // Тестовый адрес, который не должен отвечать
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error("Connection timeout")), 5000)
+  );
+  
   await assertRejects(
     async () => {
-      await handler.connect("192.0.2.0", 12345); // Тестовый адрес, который не должен отвечать
+      await Promise.race([connectPromise, timeoutPromise]);
     },
     Error
   );
@@ -50,9 +56,15 @@ Deno.test({
 }, async () => {
   const handler = new DefaultConnectionHandler();
   
+  // Добавляем таймаут, чтобы тест не зависал надолго
+  const connectPromise = handler.connect("127.0.0.1", 99999); // Неверный порт
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error("Connection timeout")), 5000)
+  );
+  
   await assertRejects(
     async () => {
-      await handler.connect("127.0.0.1", 99999); // Неверный порт
+      await Promise.race([connectPromise, timeoutPromise]);
     },
     Error
   );
