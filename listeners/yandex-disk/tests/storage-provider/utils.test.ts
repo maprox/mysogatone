@@ -3,8 +3,8 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { normalizePath, buildApiUrl, sleep, calculateDelay } from "../../src/storage-provider/utils.ts";
-import type { RetryConfig } from "../../src/storage-provider/types.ts";
+import { normalizePath, buildApiUrl, sleep, calculateDelay } from "@src/storage-provider/utils.ts";
+import type { RetryConfig } from "@src/storage-provider/types.ts";
 
 Deno.test("normalizePath - убирает ведущий слэш", () => {
   assertEquals(normalizePath("/path/to/file"), "path/to/file");

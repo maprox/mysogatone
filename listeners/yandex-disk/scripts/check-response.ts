@@ -4,8 +4,8 @@
  * Проверяет наличие файла ответа (.resp) или ошибки (.error) для запроса
  */
 
-import { YandexDiskProvider } from "../src/storage-provider/index.ts";
-import { ProtocolPaths, ProtocolUtils } from "../../../shared/protocol/types.ts";
+import { YandexDiskProvider } from "@src/storage-provider/index.ts";
+import { ProtocolPaths, ProtocolUtils } from "@shared/protocol/types.ts";
 
 /**
  * Проверяет ответ для указанного requestId

@@ -3,8 +3,8 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { cleanupRequest } from "../../src/listener/request-cleanup.ts";
-import { ProtocolPaths } from "../../../../shared/protocol/types.ts";
+import { cleanupRequest } from "@src/listener/request-cleanup.ts";
+import { ProtocolPaths } from "@shared/protocol/types.ts";
 
 // Мок StorageProvider для тестирования
 class MockStorageProvider {

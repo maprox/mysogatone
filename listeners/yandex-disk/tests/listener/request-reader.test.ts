@@ -3,9 +3,9 @@
  */
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { readRequestMetadata, readRequestData } from "../../src/listener/request-reader.ts";
-import { ProtocolPaths } from "../../../../shared/protocol/types.ts";
-import type { RequestMetadata } from "../../../../shared/protocol/types.ts";
+import { readRequestMetadata, readRequestData } from "@src/listener/request-reader.ts";
+import { ProtocolPaths } from "@shared/protocol/types.ts";
+import type { RequestMetadata } from "@shared/protocol/types.ts";
 
 // Мок StorageProvider для тестирования
 class MockStorageProvider {

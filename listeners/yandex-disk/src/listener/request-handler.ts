@@ -2,10 +2,10 @@
  * Обработка запросов LISTENER
  */
 
-import type { StorageProvider } from "../storage-provider/index.ts";
-import type { ConnectionHandler } from "../connection-handler.ts";
-import type { ProtocolPaths } from "../../../../shared/protocol/types.ts";
-import { ProtocolUtils } from "../../../../shared/protocol/types.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import type { ConnectionHandler } from "@src/connection-handler.ts";
+import type { ProtocolPaths } from "@shared/protocol/types.ts";
+import { ProtocolUtils } from "@shared/protocol/types.ts";
 import { readRequestMetadata, readRequestData } from "./request-reader.ts";
 import { cleanupRequest } from "./request-cleanup.ts";
 

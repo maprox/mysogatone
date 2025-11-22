@@ -3,7 +3,7 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { createFolder, ensureFolderExists, ensureFoldersExist } from "../../src/listener/folder-manager.ts";
+import { createFolder, ensureFolderExists, ensureFoldersExist } from "@src/listener/folder-manager.ts";
 
 // Мок StorageProvider для тестирования
 class MockStorageProvider {

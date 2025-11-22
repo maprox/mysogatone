@@ -3,7 +3,7 @@
  */
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { getConfigFromEnv } from "../../src/listener/config.ts";
+import { getConfigFromEnv } from "@src/listener/config.ts";
 
 Deno.test("getConfigFromEnv - использует значения по умолчанию", () => {
   // Сохраняем оригинальные значения

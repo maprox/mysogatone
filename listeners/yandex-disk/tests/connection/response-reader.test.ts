@@ -3,7 +3,7 @@
  */
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { readResponse } from "../../src/connection/response-reader.ts";
+import { readResponse } from "@src/connection/response-reader.ts";
 
 // Мок TCP соединения для тестирования
 class MockTcpConn implements Deno.TcpConn {

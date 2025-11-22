@@ -2,9 +2,9 @@
  * Чтение запросов из хранилища
  */
 
-import type { StorageProvider } from "../storage-provider/index.ts";
-import type { RequestMetadata } from "../../../../shared/protocol/types.ts";
-import type { ProtocolPaths } from "../../../../shared/protocol/types.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import type { RequestMetadata } from "@shared/protocol/types.ts";
+import type { ProtocolPaths } from "@shared/protocol/types.ts";
 import { sleep } from "./utils.ts";
 
 /**
