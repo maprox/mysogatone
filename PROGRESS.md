@@ -127,8 +127,8 @@
 
 ## Текущая задача
 
-**Ветка**: `feat/caller-deno-yandex-disk-connection-handler-tests`  
-**Статус**: В процессе - написаны тесты для YandexDiskConnectionHandler
+**Ветка**: `main`  
+**Статус**: Завершено - тесты для YandexDiskConnectionHandler добавлены и протестированы
 
 **Текущий PR**: 
 - PR #8: `feat: implement StorageProvider for CALLER Deno` - MERGED ✅
