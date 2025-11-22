@@ -3,9 +3,9 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { handleConnectionError } from "../../src/connection/error-handler.ts";
-import { ProtocolPaths } from "../../../../shared/protocol/types.ts";
-import { ErrorCode } from "../../../../shared/protocol/types.ts";
+import { handleConnectionError } from "@src/connection/error-handler.ts";
+import { ProtocolPaths } from "@shared/protocol/types.ts";
+import { ErrorCode } from "@shared/protocol/types.ts";
 
 // Мок StorageProvider для тестирования
 class MockStorageProvider {

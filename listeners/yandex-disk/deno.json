@@ -3,7 +3,10 @@
     "strict": true,
     "lib": ["deno.window"]
   },
-  "imports": {},
+  "imports": {
+    "@src/": "./src/",
+    "@shared/": "../../shared/"
+  },
   "lint": {
     "rules": {
       "tags": ["recommended"]

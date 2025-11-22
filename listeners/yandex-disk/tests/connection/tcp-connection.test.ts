@@ -3,7 +3,7 @@
  */
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { connectWithTimeout } from "../../src/connection/tcp-connection.ts";
+import { connectWithTimeout } from "@src/connection/tcp-connection.ts";
 
 Deno.test({
   name: "connectWithTimeout - успешное подключение",

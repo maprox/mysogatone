@@ -3,7 +3,7 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { sleep } from "../../src/listener/utils.ts";
+import { sleep } from "@src/listener/utils.ts";
 
 Deno.test({
   name: "sleep - создает задержку на указанное время",

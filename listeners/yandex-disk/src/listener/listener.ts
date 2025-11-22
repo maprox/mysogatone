@@ -4,10 +4,10 @@
  * Сервер в интернете, который мониторит Яндекс Диск и обрабатывает запросы на подключение.
  */
 
-import type { StorageProvider } from "../storage-provider/index.ts";
-import { Monitor } from "../monitor.ts";
-import { ConnectionHandler } from "../connection-handler.ts";
-import { ProtocolPaths } from "../../../../shared/protocol/types.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import { Monitor } from "@src/monitor.ts";
+import { ConnectionHandler } from "@src/connection-handler.ts";
+import { ProtocolPaths } from "@shared/protocol/types.ts";
 import type { ListenerConfig } from "./config.ts";
 import {
   processRequest,

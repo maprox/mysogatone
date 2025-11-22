@@ -2,9 +2,9 @@
  * Обработка ошибок подключения
  */
 
-import type { StorageProvider } from "../storage-provider/index.ts";
-import type { ProtocolPaths } from "../../../../shared/protocol/types.ts";
-import { ErrorMetadata, ErrorCode } from "../../../../shared/protocol/types.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import type { ProtocolPaths } from "@shared/protocol/types.ts";
+import { ErrorMetadata, ErrorCode } from "@shared/protocol/types.ts";
 
 /**
  * Обрабатывает ошибку и создает файл ошибки согласно протоколу

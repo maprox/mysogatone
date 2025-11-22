@@ -2,9 +2,9 @@
  * Управление папками на Яндекс Диске
  */
 
-import type { StorageProvider } from "../storage-provider/index.ts";
-import { normalizePath, buildApiUrl } from "../storage-provider/utils.ts";
-import { createAuthHeaders } from "../storage-provider/http-client.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import { normalizePath, buildApiUrl } from "@src/storage-provider/utils.ts";
+import { createAuthHeaders } from "@src/storage-provider/http-client.ts";
 
 /**
  * Создает папку на Яндекс Диске

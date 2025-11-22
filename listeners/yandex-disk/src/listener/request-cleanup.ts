@@ -2,8 +2,8 @@
  * Очистка файлов запроса после обработки
  */
 
-import type { StorageProvider } from "../storage-provider/index.ts";
-import type { ProtocolPaths } from "../../../../shared/protocol/types.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import type { ProtocolPaths } from "@shared/protocol/types.ts";
 
 /**
  * Удаляет файлы запроса после обработки

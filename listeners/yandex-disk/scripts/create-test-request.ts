@@ -4,9 +4,9 @@
  * Создает файлы .req и .data для тестирования LISTENER
  */
 
-import { YandexDiskProvider } from "../src/storage-provider/index.ts";
-import { ProtocolPaths, ProtocolUtils, RequestMetadata } from "../../../shared/protocol/types.ts";
-import { ensureFoldersExist } from "../src/listener/folder-manager.ts";
+import { YandexDiskProvider } from "@src/storage-provider/index.ts";
+import { ProtocolPaths, ProtocolUtils, RequestMetadata } from "@shared/protocol/types.ts";
+import { ensureFoldersExist } from "@src/listener/folder-manager.ts";
 
 /**
  * Создает тестовый запрос на Яндекс Диске

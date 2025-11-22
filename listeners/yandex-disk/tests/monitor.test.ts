@@ -3,8 +3,8 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { Monitor } from "../src/monitor.ts";
-import type { FileInfo } from "../src/storage-provider/index.ts";
+import { Monitor } from "@src/monitor.ts";
+import type { FileInfo } from "@src/storage-provider/index.ts";
 
 // Мок StorageProvider для тестирования
 class MockStorageProvider {

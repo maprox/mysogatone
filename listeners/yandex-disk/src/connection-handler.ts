@@ -4,12 +4,12 @@
  * Устанавливает TCP соединения с целевыми серверами и записывает ответы в Яндекс Диск.
  */
 
-import type { StorageProvider } from "./storage-provider/index.ts";
-import type { ProtocolPaths } from "../../../shared/protocol/types.ts";
-import { RequestMetadata } from "../../../shared/protocol/types.ts";
-import { connectWithTimeout } from "./connection/tcp-connection.ts";
-import { readResponse } from "./connection/response-reader.ts";
-import { handleConnectionError } from "./connection/error-handler.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import type { ProtocolPaths } from "@shared/protocol/types.ts";
+import { RequestMetadata } from "@shared/protocol/types.ts";
+import { connectWithTimeout } from "@src/connection/tcp-connection.ts";
+import { readResponse } from "@src/connection/response-reader.ts";
+import { handleConnectionError } from "@src/connection/error-handler.ts";
 
 export interface ConnectionRequest extends RequestMetadata {
   requestData: Uint8Array;
