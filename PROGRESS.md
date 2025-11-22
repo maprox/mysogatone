@@ -119,7 +119,7 @@
 **Текущий PR**: 
 - PR #8: `feat: implement StorageProvider for CALLER Deno` - MERGED ✅
 - PR #9: `docs: add rule to use English for commit messages` - MERGED ✅
-- PR #10: `feat: implement SOCKS5 server and ConnectionHandler for CALLER Deno` - в процессе
+- PR #10: `feat: implement SOCKS5 server and ConnectionHandler for CALLER Deno` - CREATED ✅
 
 **Следующая задача**: Тесты для YandexDiskConnectionHandler
 - Написать тесты для создания запросов
