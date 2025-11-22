@@ -4,7 +4,7 @@
  * Устанавливает TCP соединения с целевыми серверами и записывает ответы в Яндекс Диск.
  */
 
-import { StorageProvider } from "./storage-provider.ts";
+import { StorageProvider } from "./storage-provider/index.ts";
 
 export interface ConnectionRequest {
   targetAddress: string;

@@ -4,8 +4,17 @@
     "lib": ["deno.window"]
   },
   "imports": {},
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    },
+    "exclude": ["build/"]
+  },
   "tasks": {
-    "start": "deno run --allow-net src/main.ts"
+    "start": "deno run --allow-net src/main.ts",
+    "lint": "deno lint src/",
+    "lint:fix": "deno lint --fix src/",
+    "check": "deno lint src/ && deno check src/"
   }
 }
 

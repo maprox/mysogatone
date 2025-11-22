@@ -4,8 +4,23 @@
     "lib": ["deno.window"]
   },
   "imports": {},
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    },
+    "exclude": ["build/"]
+  },
   "tasks": {
-    "start": "deno run --allow-net --allow-read --allow-write src/main.ts"
+    "start": "deno run --allow-net --allow-read --allow-write src/main.ts",
+    "lint": "deno lint src/",
+    "lint:fix": "deno lint --fix src/",
+    "check": "deno lint src/ && deno check src/",
+    "test": "deno test --allow-net --allow-read --allow-write tests/",
+    "test:watch": "deno test --allow-net --allow-read --allow-write --watch tests/",
+    "verify": "deno run --allow-net --allow-read --allow-write scripts/verify-setup.ts",
+    "health": "deno run --allow-net --allow-read --allow-env scripts/check-health.ts",
+    "get-token": "deno run --allow-net --allow-env scripts/get-token.ts",
+    "get-token-full": "deno run --allow-net --allow-env scripts/get-token-full.ts"
   }
 }
 

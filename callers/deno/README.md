@@ -26,6 +26,26 @@ deno task start
 deno run --allow-net src/main.ts
 ```
 
+## Линтинг и проверка кода
+
+Проверка кода линтером:
+
+```bash
+deno task lint
+```
+
+Автоматическое исправление проблем:
+
+```bash
+deno task lint:fix
+```
+
+Проверка типов и линтинг:
+
+```bash
+deno task check
+```
+
 ## Структура
 
 - `main.ts` - Точка входа приложения

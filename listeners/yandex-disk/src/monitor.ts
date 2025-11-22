@@ -1,4 +1,4 @@
-import { StorageProvider, FileInfo } from "./storage-provider.ts";
+import { StorageProvider, FileInfo } from "./storage-provider/index.ts";
 
 /**
  * Мониторинг изменений в Яндекс Диске
