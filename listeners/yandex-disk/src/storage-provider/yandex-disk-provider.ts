@@ -30,7 +30,7 @@ export class YandexDiskProvider implements StorageProvider {
   /**
    * Выполняет HTTP запрос с обработкой ошибок и retry механизмом
    */
-  private async makeRequest(
+  private makeRequest(
     url: string,
     options: RequestInit = {}
   ): Promise<Response> {
