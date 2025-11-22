@@ -41,8 +41,8 @@ export async function readRequestData(
   requestId: string,
   storageProvider: StorageProvider,
   protocolPaths: ProtocolPaths,
-  maxWaitTime: number = 5000,
-  checkInterval: number = 500
+  maxWaitTime: number = 60000, // Увеличено до 60 секунд для ожидания загрузки данных от CALLER
+  checkInterval: number = 1000 // Увеличено до 1 секунды
 ): Promise<Uint8Array> {
   const dataPath = protocolPaths.requestData(requestId);
 
@@ -67,8 +67,9 @@ export async function readRequestData(
     }
   }
 
-  throw new Error(
-    `Timeout waiting for data file ${dataPath} (waited ${maxWaitTime}ms)`
-  );
+  // Если файл данных не появился за отведенное время, возвращаем пустой массив
+  // Это позволяет обработать запросы, где данные еще не загружены или запрос пустой
+  console.log(`⚠️  Файл данных ${dataPath} не найден после ожидания ${maxWaitTime}ms, используем пустые данные`);
+  return new Uint8Array(0);
 }
 

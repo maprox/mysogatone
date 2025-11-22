@@ -54,6 +54,7 @@ export function createStreams(
       }
 
       // Начинаем polling для получения ответа
+      console.log(`[createStreams] Начало polling для получения ответа для ${requestId}`);
       try {
         await pollForResponse(
           requestId,
@@ -62,10 +63,12 @@ export function createStreams(
           pollInterval,
           responseTimeout,
           (data: Uint8Array) => {
+            console.log(`[createStreams] Получен ответ для ${requestId}: ${data.length} байт`);
             controller.enqueue(data);
             controller.close();
           },
           (err: Error) => {
+            console.error(`[createStreams] Ошибка при получении ответа для ${requestId}:`, err);
             controller.error(err);
           }
         );
@@ -83,12 +86,15 @@ export function createStreams(
     },
     async close() {
       // Загружаем данные в хранилище
+      console.log(`[createStreams] Writer закрыт для ${requestId}, загрузка данных в хранилище...`);
       try {
         await uploadRequestData(requestId, dataBuffer, storageProvider, protocolPaths);
+        console.log(`[createStreams] Данные загружены в хранилище для ${requestId}, начинаем polling`);
         onDataUploaded();
         pollingStarted = true;
       } catch (err) {
         // Сохраняем ошибку и устанавливаем флаг, чтобы reader мог ее обработать
+        console.error(`[createStreams] Ошибка при загрузке данных для ${requestId}:`, err);
         uploadError = err instanceof Error ? err : new Error(String(err));
         pollingStarted = true;
       }

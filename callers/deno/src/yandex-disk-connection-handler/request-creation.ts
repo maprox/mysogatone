@@ -16,6 +16,7 @@ export async function createRequestMetadata(
   storageProvider: StorageProvider,
   protocolPaths: ProtocolPaths
 ): Promise<void> {
+  console.log(`[createRequestMetadata] Создание метаданных для ${requestId}...`);
   const metadata: RequestMetadata = {
     requestId,
     targetAddress,
@@ -24,11 +25,14 @@ export async function createRequestMetadata(
   };
 
   const metadataPath = protocolPaths.requestMetadata(requestId);
+  console.log(`[createRequestMetadata] Путь к метаданным: ${metadataPath}`);
   const metadataJson = JSON.stringify(metadata);
+  console.log(`[createRequestMetadata] Загрузка метаданных в хранилище...`);
   await storageProvider.uploadFile(
     metadataPath,
     new TextEncoder().encode(metadataJson)
   );
+  console.log(`[createRequestMetadata] Метаданные загружены успешно`);
 }
 
 /**

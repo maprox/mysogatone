@@ -33,6 +33,8 @@ export class Monitor {
     console.log(`[Monitor] Инициализация: получение списка файлов из ${this.watchFolder}...`);
     const initialFiles = await this.storageProvider.listFiles(this.watchFolder);
     console.log(`[Monitor] Найдено ${initialFiles.length} файлов при инициализации`);
+    
+    // Обрабатываем файлы, найденные при инициализации (они могут быть новыми запросами)
     for (const file of initialFiles) {
       // Нормализуем путь: убираем префикс "disk:" если есть
       const normalizedPath = file.path.startsWith("disk:") 
@@ -40,6 +42,12 @@ export class Monitor {
         : file.path;
       console.log(`[Monitor] Добавлен в knownFiles: ${normalizedPath} (оригинальный: ${file.path})`);
       this.knownFiles.add(normalizedPath);
+      
+      // Обрабатываем файл как новый запрос (если это .req файл)
+      if (normalizedPath.endsWith(".req")) {
+        console.log(`[Monitor] Обработка файла, найденного при инициализации: ${normalizedPath}`);
+        await onNewRequest({ ...file, path: normalizedPath });
+      }
     }
     console.log(`[Monitor] Инициализация завершена. Известных файлов: ${this.knownFiles.size}`);
     

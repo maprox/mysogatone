@@ -48,11 +48,17 @@ async function main(): Promise<void> {
     Deno.exit(0);
   });
 
-  Deno.addSignalListener("SIGTERM", () => {
-    console.log("\nПолучен сигнал SIGTERM, останавливаем сервер...");
-    server.stop();
-    Deno.exit(0);
-  });
+  // SIGTERM поддерживается не на всех платформах (например, Windows)
+  try {
+    Deno.addSignalListener("SIGTERM", () => {
+      console.log("\nПолучен сигнал SIGTERM, останавливаем сервер...");
+      server.stop();
+      Deno.exit(0);
+    });
+  } catch (_error) {
+    // Игнорируем ошибку, если SIGTERM не поддерживается
+    // На Windows это нормально
+  }
 
   try {
     await server.start();
