@@ -83,6 +83,21 @@ SOCKS5 сервер на Deno для тестирования на Windows/Linux
 
 ## Быстрый старт
 
+### Установка Git Hooks
+
+После клонирования репозитория установите Git hooks для автоматической проверки кода перед коммитом:
+
+```bash
+# Через npm (если установлен Node.js)
+npm install
+
+# Или вручную через скрипт
+./scripts/install-hooks.sh
+# Или на Windows: scripts\install-hooks.bat
+```
+
+Подробнее см. [GIT_HOOKS.md](GIT_HOOKS.md)
+
 ### LISTENER для Яндекс Диск
 
 ```bash
@@ -100,6 +115,7 @@ cd callers/android
 ## Документация
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Подробная архитектура системы
+- [GIT_HOOKS.md](GIT_HOOKS.md) - Настройка Git hooks для автоматической проверки кода
 - [shared/protocol/PROTOCOL.md](shared/protocol/PROTOCOL.md) - Протокол передачи данных через файлы
 - [listeners/yandex-disk/README.md](listeners/yandex-disk/README.md) - Документация LISTENER
 - [callers/android/README.md](callers/android/README.md) - Документация CALLER для Android
