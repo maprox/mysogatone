@@ -62,8 +62,8 @@ class MockTcpConn implements Deno.TcpConn {
   readonly localAddr!: Deno.NetAddr;
   readonly remoteAddr!: Deno.NetAddr;
   readonly rid!: number;
-  readonly readable!: ReadableStream<Uint8Array>;
-  readonly writable!: WritableStream<Uint8Array>;
+  readonly readable!: ReadableStream<Uint8Array<ArrayBuffer>>;
+  readonly writable!: WritableStream<Uint8Array<ArrayBuffer>>;
   
   [Symbol.dispose](): void {
     this.close();
