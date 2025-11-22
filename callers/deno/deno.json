@@ -3,7 +3,10 @@
     "strict": true,
     "lib": ["deno.window"]
   },
-  "imports": {},
+  "imports": {
+    "@src/": "./src/",
+    "@shared/": "../../shared/"
+  },
   "lint": {
     "rules": {
       "tags": ["recommended"]
@@ -11,10 +14,11 @@
     "exclude": ["build/"]
   },
   "tasks": {
-    "start": "deno run --allow-net src/main.ts",
+    "start": "deno run --allow-net --allow-read --allow-write src/main.ts",
     "lint": "deno lint src/",
     "lint:fix": "deno lint --fix src/",
-    "check": "deno lint src/ && deno check src/"
+    "check": "deno lint src/ && deno check src/",
+    "test": "deno test --allow-net --allow-read --allow-write tests/"
   }
 }
 
