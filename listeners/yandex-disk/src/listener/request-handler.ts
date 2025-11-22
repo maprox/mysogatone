@@ -5,7 +5,7 @@
 import type { StorageProvider } from "@src/storage-provider/index.ts";
 import type { ConnectionHandler } from "@src/connection-handler.ts";
 import type { ProtocolPaths } from "@shared/protocol/types.ts";
-import { ProtocolUtils } from "@shared/protocol/types.ts";
+import { isRequestMetadata, parseRequestId } from "@shared/protocol/utils.ts";
 import { readRequestMetadata, readRequestData } from "./request-reader.ts";
 import { cleanupRequest } from "./request-cleanup.ts";
 
@@ -85,7 +85,7 @@ export function extractRequestIdFromPath(
   console.log(`[extractRequestIdFromPath] Проверка пути: ${filePath}`);
   
   // Проверяем, что это файл метаданных запроса
-  if (!ProtocolUtils.isRequestMetadata(filePath)) {
+  if (!isRequestMetadata(filePath)) {
     console.log(`[extractRequestIdFromPath] Файл не является .req файлом: ${filePath}`);
     return null;
   }
@@ -96,7 +96,7 @@ export function extractRequestIdFromPath(
   console.log(`[extractRequestIdFromPath] Имя файла: ${filename}`);
 
   // Извлекаем requestId из имени файла
-  const requestId = ProtocolUtils.parseRequestId(filename);
+  const requestId = parseRequestId(filename);
   if (!requestId) {
     console.warn(`⚠️  Не удалось извлечь requestId из ${filePath} (filename: ${filename})`);
     return null;

@@ -5,7 +5,8 @@
  */
 
 import { YandexDiskProvider } from "@src/storage-provider/index.ts";
-import { ProtocolPaths, ProtocolUtils, RequestMetadata } from "@shared/protocol/types.ts";
+import { ProtocolPaths, RequestMetadata } from "@shared/protocol/types.ts";
+import { generateRequestId } from "@shared/protocol/utils.ts";
 import { ensureFoldersExist } from "@src/listener/folder-manager.ts";
 
 /**
@@ -30,7 +31,7 @@ async function createTestRequest(
   );
 
   // Генерируем уникальный requestId
-  const requestId = ProtocolUtils.generateRequestId();
+  const requestId = generateRequestId();
   console.log(`📝 Создание тестового запроса: ${requestId}`);
 
   // Создаем метаданные запроса

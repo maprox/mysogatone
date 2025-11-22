@@ -88,8 +88,11 @@ check_deno_project() {
                     exit 1
                 fi
                 # Дополнительная проверка: убеждаемся что тесты действительно прошли
-                if echo "$TEST_OUTPUT" | grep -q "failed"; then
-                    echo "${RED}  ✗ Обнаружены упавшие тесты в $project_name${NC}"
+                # Проверяем наличие упавших тестов (ищем паттерн "X failed" где X > 0)
+                # Используем более точный паттерн для поиска строки со статистикой
+                FAILED_COUNT=$(echo "$TEST_OUTPUT" | grep -oE "\|\s*[0-9]+\s+failed" | grep -oE "[0-9]+" | head -1 || echo "0")
+                if [ -n "$FAILED_COUNT" ] && [ "$FAILED_COUNT" != "0" ]; then
+                    echo "${RED}  ✗ Обнаружены упавшие тесты в $project_name ($FAILED_COUNT failed)${NC}"
                     echo "$TEST_OUTPUT"
                     echo "${RED}Коммит заблокирован из-за ошибок в тестах.${NC}"
                     cd "$ORIGINAL_DIR" || true

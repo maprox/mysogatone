@@ -5,7 +5,8 @@
  */
 
 import { YandexDiskProvider } from "@src/storage-provider/index.ts";
-import { ProtocolPaths, ProtocolUtils } from "@shared/protocol/types.ts";
+import { ProtocolPaths } from "@shared/protocol/types.ts";
+import { parseRequestId } from "@shared/protocol/utils.ts";
 
 /**
  * Проверяет ответ для указанного requestId
@@ -134,7 +135,7 @@ async function main(): Promise<void> {
   }
 
   // Валидация requestId
-  if (!ProtocolUtils.parseRequestId(`${requestId}.req`)) {
+  if (!parseRequestId(`${requestId}.req`)) {
     console.error(`❌ Ошибка: неверный формат requestId: ${requestId}`);
     console.error("   RequestId должен быть в формате UUID v4");
     Deno.exit(1);

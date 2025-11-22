@@ -28,3 +28,6 @@ import "./listener/request-cleanup.test.ts";
 import "./listener/folder-manager.test.ts";
 import "./monitor.test.ts";
 
+// Protocol тесты
+import "./protocol/utils.test.ts";
+
