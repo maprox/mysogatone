@@ -15,11 +15,27 @@
   - Скрипты установки hooks для разных платформ (sh, bat, js)
   - Автоматическая установка через npm postinstall скрипт
   - Документация по настройке и использованию (GIT_HOOKS.md)
+- Реализация StorageProvider для CALLER Deno (callers/deno/)
+  - Модульная архитектура storage-provider/ (аналогично LISTENER)
+  - Полная реализация YandexDiskProvider с методами listFiles, downloadFile, uploadFile, deleteFile
+  - OAuth аутентификация
+  - Retry механизм с exponential backoff
+  - Обработка rate limits (429) с поддержкой Retry-After заголовка
+  - Обработка ошибок API с детальными сообщениями
+  - Настройка алиасов импорта (@src/, @shared/) в deno.json
+  - Комплексные юнит тесты (47 тестов)
+    - Тесты для утилит (11 тестов)
+    - Тесты для классов ошибок (3 теста)
+    - Тесты для операций с файлами (8 тестов)
+    - Тесты для HTTP клиента и retry логики (17 тестов)
+    - Тесты для основного провайдера (8 тестов)
 
 ### Планируется
 - Реализация polling механизма для мониторинга изменений
 - Реализация connection-handler для подключения к целевым серверам
-- Реализация StorageProvider для CALLER (Deno и Android)
+- Реализация SOCKS5 сервера для CALLER Deno
+- Реализация ConnectionHandler через StorageProvider для CALLER Deno
+- Реализация StorageProvider для CALLER Android
 - Интеграция CALLER с облачным хранилищем через StorageProvider
 - Тестирование интеграции между LISTENER и CALLER
 
