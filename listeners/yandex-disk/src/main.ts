@@ -6,6 +6,7 @@
 
 import { Listener } from "./listener/listener.ts";
 import { getConfigFromEnv } from "./listener/config.ts";
+import { YandexDiskProvider } from "./storage-provider/index.ts";
 
 /**
  * Точка входа
@@ -13,7 +14,8 @@ import { getConfigFromEnv } from "./listener/config.ts";
 async function main(): Promise<void> {
   try {
     const config = getConfigFromEnv();
-    const listener = new Listener(config);
+    const storageProvider = new YandexDiskProvider(config.accessToken);
+    const listener = new Listener(config, storageProvider);
     await listener.start();
   } catch (error) {
     console.error("❌ Критическая ошибка:", error);

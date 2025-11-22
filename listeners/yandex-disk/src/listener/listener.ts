@@ -4,7 +4,7 @@
  * Сервер в интернете, который мониторит Яндекс Диск и обрабатывает запросы на подключение.
  */
 
-import { YandexDiskProvider } from "../storage-provider/index.ts";
+import type { StorageProvider } from "../storage-provider/index.ts";
 import { Monitor } from "../monitor.ts";
 import { ConnectionHandler } from "../connection-handler.ts";
 import { ProtocolPaths } from "../../../../shared/protocol/types.ts";
@@ -14,12 +14,14 @@ import {
   extractRequestIdFromPath,
 } from "./request-handler.ts";
 import { sleep } from "./utils.ts";
+import { ensureFoldersExist } from "./folder-manager.ts";
+import { setupSignalHandlers } from "./signal-handler.ts";
 
 /**
  * Основной класс LISTENER
  */
 export class Listener {
-  private storageProvider: YandexDiskProvider;
+  private storageProvider: StorageProvider;
   private monitor: Monitor;
   private connectionHandler: ConnectionHandler;
   private protocolPaths: ProtocolPaths;
@@ -27,9 +29,12 @@ export class Listener {
   private running: boolean = false;
   private processingRequests: Set<string> = new Set();
 
-  constructor(config: ListenerConfig) {
+  constructor(
+    config: ListenerConfig,
+    storageProvider: StorageProvider
+  ) {
     this.config = config;
-    this.storageProvider = new YandexDiskProvider(config.accessToken);
+    this.storageProvider = storageProvider;
     this.protocolPaths = new ProtocolPaths(
       config.requestsFolder,
       config.responsesFolder
@@ -58,11 +63,20 @@ export class Listener {
     this.running = true;
     this.logStartupInfo();
 
-    // Запускаем мониторинг
-    await this.monitor.start((fileInfo) => this.handleNewFile(fileInfo));
+    // Создаем необходимые папки
+    await ensureFoldersExist(
+      ".mysogatone",
+      this.config.requestsFolder,
+      this.config.responsesFolder,
+      this.storageProvider,
+      this.config.accessToken
+    );
 
-    // Обработка сигналов для graceful shutdown
-    this.setupSignalHandlers();
+    // Обработка сигналов для graceful shutdown (устанавливаем ДО запуска monitor)
+    setupSignalHandlers(() => this.stop());
+
+    // Запускаем мониторинг (блокирующий вызов с бесконечным циклом)
+    await this.monitor.start((fileInfo) => this.handleNewFile(fileInfo));
   }
 
   /**
@@ -87,16 +101,20 @@ export class Listener {
    * Обрабатывает новый файл, обнаруженный монитором
    */
   private async handleNewFile(fileInfo: { path: string }): Promise<void> {
+    console.log(`[Listener] handleNewFile вызван для пути: ${fileInfo.path}`);
     const requestId = extractRequestIdFromPath(fileInfo.path);
     if (!requestId) {
+      console.log(`[Listener] Не удалось извлечь requestId из ${fileInfo.path}, пропускаем`);
       return;
     }
 
     // Проверяем, не обрабатывается ли уже этот запрос
     if (this.processingRequests.has(requestId)) {
+      console.log(`[Listener] Запрос ${requestId} уже обрабатывается, пропускаем`);
       return;
     }
 
+    console.log(`[Listener] Начинаем обработку запроса ${requestId}`);
     // Добавляем в список обрабатываемых
     this.processingRequests.add(requestId);
 
@@ -114,6 +132,7 @@ export class Listener {
     } finally {
       // Удаляем из списка обрабатываемых
       this.processingRequests.delete(requestId);
+      console.log(`[Listener] Завершена обработка запроса ${requestId}`);
     }
   }
 
@@ -140,21 +159,5 @@ export class Listener {
     }
   }
 
-  /**
-   * Настраивает обработчики сигналов для graceful shutdown
-   */
-  private setupSignalHandlers(): void {
-    // Обработка SIGINT (Ctrl+C)
-    Deno.addSignalListener("SIGINT", async () => {
-      await this.stop();
-      Deno.exit(0);
-    });
-
-    // Обработка SIGTERM
-    Deno.addSignalListener("SIGTERM", async () => {
-      await this.stop();
-      Deno.exit(0);
-    });
-  }
 }
 

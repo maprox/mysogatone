@@ -42,14 +42,14 @@ export function getConfigFromEnv(): ListenerConfig {
 
   return {
     accessToken,
-    requestsFolder: Deno.env.get("REQUESTS_FOLDER") || "requests",
-    responsesFolder: Deno.env.get("RESPONSES_FOLDER") || "responses",
+    requestsFolder: Deno.env.get("REQUESTS_FOLDER") || ".mysogatone/requests",
+    responsesFolder: Deno.env.get("RESPONSES_FOLDER") || ".mysogatone/responses",
     pollInterval: parseInt(
-      Deno.env.get("POLL_INTERVAL_MS") || "5000",
+      Deno.env.get("POLL_INTERVAL_MS") || "2000",
       10
     ),
     connectionTimeout: parseInt(
-      Deno.env.get("CONNECTION_TIMEOUT_MS") || "60000",
+      Deno.env.get("CONNECTION_TIMEOUT_MS") || "10000",
       10
     ),
   };

@@ -6,11 +6,10 @@ import { assertEquals, assertRejects, assertInstanceOf } from "https://deno.land
 import {
   createAuthHeaders,
   parseApiError,
-  handleRateLimit,
-  executeRequest,
-  shouldRetry,
   executeWithRetry,
 } from "../src/storage-provider/http-client.ts";
+import { handleRateLimit } from "../src/storage-provider/rate-limit-handler.ts";
+import { executeRequest, shouldRetry } from "../src/storage-provider/retry-strategy.ts";
 import { YandexDiskApiError } from "../src/storage-provider/errors.ts";
 import type { RetryConfig } from "../src/storage-provider/types.ts";
 
