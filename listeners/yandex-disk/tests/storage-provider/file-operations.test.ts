@@ -3,8 +3,8 @@
  */
 
 import { assertEquals, assertRejects, assertInstanceOf } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { mapToFileInfo, getOperationLink, executeFileOperation } from "../src/storage-provider/file-operations.ts";
-import { YandexDiskApiError } from "../src/storage-provider/errors.ts";
+import { mapToFileInfo, getOperationLink, executeFileOperation } from "../../src/storage-provider/file-operations.ts";
+import { YandexDiskApiError } from "../../src/storage-provider/errors.ts";
 
 Deno.test("mapToFileInfo - преобразует элемент API в FileInfo", () => {
   const item = {
