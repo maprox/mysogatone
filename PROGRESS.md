@@ -43,10 +43,22 @@
   - Обработка rate limits (429) с поддержкой Retry-After заголовка
   - Настройка алиасов импорта (@src/, @shared/) в deno.json
   - Комплексные юнит тесты (47 тестов)
-- ⏳ Реализация SOCKS5 сервера
-- ⏳ Реализация ConnectionHandler через StorageProvider
-- ⏳ Polling для проверки ответов от LISTENER
-- ⏳ Интеграция всех компонентов
+- ✅ Реализация SOCKS5 сервера
+  - SOCKS5 сервер (socks5-server.ts) с поддержкой множественных соединений
+  - SOCKS5 обработчик протокола (socks5-handler.ts) с полной поддержкой протокола
+  - Интерфейс ConnectionHandler для абстракции подключений
+  - DefaultConnectionHandler для прямых TCP соединений
+  - Комплексные тесты (11 тестов)
+- ✅ Реализация ConnectionHandler через StorageProvider
+  - Модульная архитектура yandex-disk-connection-handler/
+  - Создание запросов в хранилище (метаданные + данные)
+  - Polling для проверки ответов от LISTENER
+  - Обработка ошибок от LISTENER
+  - Очистка файлов после получения ответа
+  - Интеграция с SOCKS5 сервером
+  - Точка входа main.ts с поддержкой переменных окружения
+- ⏳ Тесты для YandexDiskConnectionHandler
+- ⏳ Интеграционное тестирование с LISTENER
 
 #### CALLER для Android (callers/android/)
 - ✅ Базовая структура проекта
@@ -69,22 +81,23 @@
    - ✅ Добавлена обработка ошибок и retry логика
    - ✅ Написаны тесты (47 тестов)
 
-2. **Реализация SOCKS5 сервера** (callers/deno/)
-   - Создать socks5-server.ts
-   - Создать socks5-handler.ts
-   - Реализовать обработку SOCKS5 протокола
-   - Интегрировать с ConnectionHandler
+2. ✅ **Реализация SOCKS5 сервера** (callers/deno/) - ЗАВЕРШЕНО
+   - ✅ Создан socks5-server.ts
+   - ✅ Создан socks5-handler.ts
+   - ✅ Реализована обработка SOCKS5 протокола
+   - ✅ Интегрирован с ConnectionHandler
+   - ✅ Написаны тесты (11 тестов)
 
-3. **Реализация ConnectionHandler через StorageProvider** (callers/deno/)
-   - Создать yandex-disk-connection-handler.ts
-   - Реализовать создание запросов через StorageProvider
-   - Реализовать polling для проверки ответов
-   - Реализовать передачу данных между APP и хранилищем
+3. ✅ **Реализация ConnectionHandler через StorageProvider** (callers/deno/) - ЗАВЕРШЕНО
+   - ✅ Создана модульная архитектура yandex-disk-connection-handler/
+   - ✅ Реализовано создание запросов через StorageProvider
+   - ✅ Реализован polling для проверки ответов
+   - ✅ Реализована передача данных между APP и хранилищем
+   - ✅ Создан main.ts с инициализацией всех компонентов
 
 4. **Интеграция и тестирование**
-   - Создать main.ts с инициализацией всех компонентов
-   - Написать тесты для всех компонентов
-   - Провести интеграционное тестирование с LISTENER
+   - ⏳ Написать тесты для YandexDiskConnectionHandler
+   - ⏳ Провести интеграционное тестирование с LISTENER
 
 #### Приоритет 2: CALLER для Android
 1. Реализация StorageProvider для Яндекс Диск (Kotlin)
@@ -105,13 +118,14 @@
 
 **Текущий PR**: 
 - PR #8: `feat: implement StorageProvider for CALLER Deno` - MERGED ✅
-- PR #9: `docs: add rule to use English for commit messages` - в ревью
+- PR #9: `docs: add rule to use English for commit messages` - MERGED ✅
+- PR #10: `feat: implement SOCKS5 server and ConnectionHandler for CALLER Deno` - в процессе
 
-**Следующая задача**: Реализация SOCKS5 сервера для CALLER Deno
-- Создать socks5-server.ts
-- Создать socks5-handler.ts
-- Реализовать обработку SOCKS5 протокола
-- Интегрировать с ConnectionHandler
+**Следующая задача**: Тесты для YandexDiskConnectionHandler
+- Написать тесты для создания запросов
+- Написать тесты для polling ответов
+- Написать тесты для обработки ошибок
+- Провести интеграционное тестирование с LISTENER
 
 ## Заметки
 

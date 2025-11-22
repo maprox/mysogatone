@@ -35,11 +35,38 @@
     - Тесты для HTTP клиента и retry логики (17 тестов)
     - Тесты для основного провайдера (8 тестов)
 
+### Добавлено
+- Реализация SOCKS5 сервера для CALLER Deno (callers/deno/)
+  - SOCKS5 сервер (socks5-server.ts) с поддержкой множественных соединений
+  - SOCKS5 обработчик протокола (socks5-handler.ts) с полной поддержкой протокола
+    - Handshake с поддержкой No Auth
+    - Обработка CONNECT запросов
+    - Поддержка IPv4 и доменных имен
+    - Передача данных между клиентом и целевым сервером
+    - Буферизация данных для корректного чтения
+  - Интерфейс ConnectionHandler для абстракции подключений
+  - DefaultConnectionHandler для прямых TCP соединений (для тестирования)
+  - Комплексные тесты для SOCKS5 компонентов (11 тестов)
+    - Тесты для DefaultConnectionHandler (3 теста)
+    - Тесты для Socks5Handler (5 тестов)
+    - Тесты для Socks5Server (3 теста)
+- Реализация ConnectionHandler через StorageProvider для CALLER Deno (callers/deno/)
+  - Модульная архитектура yandex-disk-connection-handler/
+    - types.ts - типы и конфигурация
+    - request-creation.ts - создание запросов в хранилище
+    - response-poller.ts - polling для проверки ответов от LISTENER
+    - streams.ts - создание потоков для передачи данных
+    - index.ts - основной класс YandexDiskConnectionHandler
+  - Создание метаданных запросов (.req файлы)
+  - Загрузка данных запросов (.data файлы)
+  - Polling для проверки ответов (.resp файлы)
+  - Обработка ошибок от LISTENER (.error файлы)
+  - Очистка файлов после получения ответа
+  - Интеграция с SOCKS5 сервером через интерфейс ConnectionHandler
+  - Точка входа main.ts с поддержкой переменных окружения
+
 ### Планируется
-- Реализация polling механизма для мониторинга изменений
-- Реализация connection-handler для подключения к целевым серверам
-- Реализация SOCKS5 сервера для CALLER Deno
-- Реализация ConnectionHandler через StorageProvider для CALLER Deno
+- Тесты для YandexDiskConnectionHandler
 - Реализация StorageProvider для CALLER Android
 - Интеграция CALLER с облачным хранилищем через StorageProvider
 - Тестирование интеграции между LISTENER и CALLER
