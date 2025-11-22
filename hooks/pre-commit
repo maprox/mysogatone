@@ -74,11 +74,24 @@ check_deno_project() {
             # Тесты
             if [ -d "tests" ] && [ "$(ls -A tests 2>/dev/null)" ]; then
                 echo "  → Запуск тестов..."
+                # Используем deno task test для правильной передачи флагов разрешений
+                # Важно: НЕ используйте deno test напрямую без флагов!
                 TEST_OUTPUT=$(deno task test 2>&1)
                 TEST_EXIT=$?
                 if [ $TEST_EXIT -ne 0 ]; then
                     echo "${RED}  ✗ Тесты не прошли в $project_name${NC}"
                     echo "$TEST_OUTPUT"
+                    echo ""
+                    echo "${RED}ВАЖНО: Используйте 'deno task test' для запуска тестов, а не 'deno test' напрямую!${NC}"
+                    echo "${RED}Коммит заблокирован из-за ошибок в тестах.${NC}"
+                    cd "$ORIGINAL_DIR" || true
+                    exit 1
+                fi
+                # Дополнительная проверка: убеждаемся что тесты действительно прошли
+                if echo "$TEST_OUTPUT" | grep -q "failed"; then
+                    echo "${RED}  ✗ Обнаружены упавшие тесты в $project_name${NC}"
+                    echo "$TEST_OUTPUT"
+                    echo "${RED}Коммит заблокирован из-за ошибок в тестах.${NC}"
                     cd "$ORIGINAL_DIR" || true
                     exit 1
                 fi
