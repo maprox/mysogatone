@@ -1,7 +1,7 @@
 # Прогресс разработки проекта Mysogatone
 
 **Последнее обновление**: 2025-01-22  
-**Текущая ветка**: `main`  
+**Текущая ветка**: `feat/caller-deno-yandex-disk-connection-handler-tests`  
 **Версия**: 1.1.0
 
 ## Текущий статус
@@ -58,7 +58,12 @@
   - Очистка файлов после получения ответа
   - Интеграция с SOCKS5 сервером
   - Точка входа main.ts с поддержкой переменных окружения
-- ⏳ Тесты для YandexDiskConnectionHandler
+- ✅ Тесты для YandexDiskConnectionHandler (15 тестов)
+  - Тесты для request-creation.ts (3 теста)
+  - Тесты для response-poller.ts (5 тестов)
+  - Тесты для streams.ts (3 теста)
+  - Тесты для YandexDiskConnectionHandler (2 теста)
+  - MockStorageProvider для тестирования
 - ⏳ Интеграционное тестирование с LISTENER
 
 #### CALLER для Android (callers/android/)
@@ -96,8 +101,16 @@
    - ✅ Реализована передача данных между APP и хранилищем
    - ✅ Создан main.ts с инициализацией всех компонентов
 
-4. **Интеграция и тестирование**
-   - ⏳ Написать тесты для YandexDiskConnectionHandler
+4. ✅ **Тесты для YandexDiskConnectionHandler** (callers/deno/) - ЗАВЕРШЕНО
+   - ✅ Написаны тесты для request-creation.ts (3 теста)
+   - ✅ Написаны тесты для response-poller.ts (5 тестов)
+   - ✅ Написаны тесты для streams.ts (3 теста)
+   - ✅ Написаны тесты для YandexDiskConnectionHandler (2 теста)
+   - ✅ Создан MockStorageProvider для тестирования
+   - ✅ Исправлена обработка ошибок в streams.ts
+   - ✅ Все тесты проходят успешно (15 тестов)
+
+5. **Интеграция и тестирование**
    - ⏳ Провести интеграционное тестирование с LISTENER
 
 #### Приоритет 2: CALLER для Android
@@ -114,19 +127,18 @@
 
 ## Текущая задача
 
-**Ветка**: `feature/caller-deno-storage-provider`  
-**Статус**: В процессе - реализован StorageProvider для CALLER Deno
+**Ветка**: `feat/caller-deno-yandex-disk-connection-handler-tests`  
+**Статус**: В процессе - написаны тесты для YandexDiskConnectionHandler
 
 **Текущий PR**: 
 - PR #8: `feat: implement StorageProvider for CALLER Deno` - MERGED ✅
 - PR #9: `docs: add rule to use English for commit messages` - MERGED ✅
 - PR #10: `feat: implement SOCKS5 server and ConnectionHandler for CALLER Deno` - MERGED ✅
+- PR #11: `test: add comprehensive tests for YandexDiskConnectionHandler` - В процессе ⏳
 
-**Следующая задача**: Тесты для YandexDiskConnectionHandler
-- Написать тесты для создания запросов
-- Написать тесты для polling ответов
-- Написать тесты для обработки ошибок
-- Провести интеграционное тестирование с LISTENER
+**Следующая задача**: Интеграционное тестирование с LISTENER
+- Провести интеграционное тестирование между CALLER и LISTENER
+- Проверить полный цикл передачи данных через облачное хранилище
 
 ## Заметки
 

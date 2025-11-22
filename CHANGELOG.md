@@ -7,11 +7,23 @@
 
 ## [Unreleased]
 
+### Добавлено
+- Тесты для YandexDiskConnectionHandler для CALLER Deno (callers/deno/)
+  - Комплексные тесты для всех модулей YandexDiskConnectionHandler (15 тестов)
+    - Тесты для request-creation.ts (3 теста): создание метаданных, загрузка данных, обработка ошибок
+    - Тесты для response-poller.ts (5 тестов): успешное получение ответа, polling с несколькими попытками, обработка ошибок от LISTENER, таймауты, продолжение polling при ошибках проверки
+    - Тесты для streams.ts (3 теста): создание потоков и передача данных, обработка ошибок при загрузке, обработка ошибок от LISTENER
+    - Тесты для YandexDiskConnectionHandler (2 теста): создание соединения, обработка ошибок при создании метаданных
+  - MockStorageProvider для тестирования с автоматическим обновлением listFilesResult
+  - Исправлена обработка ошибок в streams.ts при ошибке загрузки данных
+
+### Исправлено
+- Исправлены тесты DefaultConnectionHandler: добавлены таймауты для предотвращения зависаний при подключении к недоступным серверам
+
 ### Планируется
-- Тесты для YandexDiskConnectionHandler
 - Реализация StorageProvider для CALLER Android
 - Интеграция CALLER с облачным хранилищем через StorageProvider
-- Тестирование интеграции между LISTENER и CALLER
+- Интеграционное тестирование между LISTENER и CALLER
 
 ## [1.1.0] - 2025-01-22
 
