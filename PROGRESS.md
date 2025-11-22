@@ -1,7 +1,8 @@
 # Прогресс разработки проекта Mysogatone
 
 **Последнее обновление**: 2025-01-22  
-**Текущая ветка**: `feature/caller-deno-storage-provider`
+**Текущая ветка**: `main`  
+**Версия**: 1.1.0
 
 ## Текущий статус
 
@@ -119,7 +120,7 @@
 **Текущий PR**: 
 - PR #8: `feat: implement StorageProvider for CALLER Deno` - MERGED ✅
 - PR #9: `docs: add rule to use English for commit messages` - MERGED ✅
-- PR #10: `feat: implement SOCKS5 server and ConnectionHandler for CALLER Deno` - CREATED ✅
+- PR #10: `feat: implement SOCKS5 server and ConnectionHandler for CALLER Deno` - MERGED ✅
 
 **Следующая задача**: Тесты для YandexDiskConnectionHandler
 - Написать тесты для создания запросов
