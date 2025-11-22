@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+### Планируется
+- Реализация StorageProvider для CALLER Android
+- Интеграция CALLER с облачным хранилищем через StorageProvider
+- Интеграционное тестирование между LISTENER и CALLER
+
+## [1.1.1] - 2025-01-22
+
 ### Добавлено
 - Тесты для YandexDiskConnectionHandler для CALLER Deno (callers/deno/)
   - Комплексные тесты для всех модулей YandexDiskConnectionHandler (15 тестов)
@@ -19,11 +26,6 @@
 
 ### Исправлено
 - Исправлены тесты DefaultConnectionHandler: добавлены таймауты для предотвращения зависаний при подключении к недоступным серверам
-
-### Планируется
-- Реализация StorageProvider для CALLER Android
-- Интеграция CALLER с облачным хранилищем через StorageProvider
-- Интеграционное тестирование между LISTENER и CALLER
 
 ## [1.1.0] - 2025-01-22
 
