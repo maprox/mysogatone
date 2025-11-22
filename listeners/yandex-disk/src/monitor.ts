@@ -30,10 +30,18 @@ export class Monitor {
     console.log(`Мониторинг запущен для папки: ${this.watchFolder}`);
     
     // Инициализация: получаем текущий список файлов
+    console.log(`[Monitor] Инициализация: получение списка файлов из ${this.watchFolder}...`);
     const initialFiles = await this.storageProvider.listFiles(this.watchFolder);
+    console.log(`[Monitor] Найдено ${initialFiles.length} файлов при инициализации`);
     for (const file of initialFiles) {
-      this.knownFiles.add(file.path);
+      // Нормализуем путь: убираем префикс "disk:" если есть
+      const normalizedPath = file.path.startsWith("disk:") 
+        ? file.path.substring(5) 
+        : file.path;
+      console.log(`[Monitor] Добавлен в knownFiles: ${normalizedPath} (оригинальный: ${file.path})`);
+      this.knownFiles.add(normalizedPath);
     }
+    console.log(`[Monitor] Инициализация завершена. Известных файлов: ${this.knownFiles.size}`);
     
     // Основной цикл polling
     while (this.running) {
@@ -59,17 +67,30 @@ export class Monitor {
   private async checkForNewFiles(
     onNewRequest: (fileInfo: FileInfo) => Promise<void>
   ): Promise<void> {
-    const files = await this.storageProvider.listFiles(this.watchFolder);
-    
-    for (const file of files) {
-      if (!this.knownFiles.has(file.path)) {
-        // Обнаружен новый файл
-        console.log(`Обнаружен новый запрос: ${file.path}`);
-        this.knownFiles.add(file.path);
+    try {
+      const files = await this.storageProvider.listFiles(this.watchFolder);
+      console.log(`[Monitor] Проверка папки ${this.watchFolder}: найдено ${files.length} файлов`);
+      
+      for (const file of files) {
+        // Нормализуем путь: убираем префикс "disk:" если есть
+        const normalizedPath = file.path.startsWith("disk:") 
+          ? file.path.substring(5) 
+          : file.path;
         
-        // Обрабатываем новый запрос
-        await onNewRequest(file);
+        if (!this.knownFiles.has(normalizedPath)) {
+          // Обнаружен новый файл
+          console.log(`[Monitor] Обнаружен новый запрос: ${normalizedPath} (оригинальный путь: ${file.path})`);
+          this.knownFiles.add(normalizedPath);
+          
+          // Обрабатываем новый запрос (передаем файл с нормализованным путем)
+          await onNewRequest({ ...file, path: normalizedPath });
+        } else {
+          console.log(`[Monitor] Файл уже известен: ${normalizedPath}`);
+        }
       }
+    } catch (error) {
+      console.error(`[Monitor] Ошибка при проверке файлов в ${this.watchFolder}:`, error);
+      throw error;
     }
   }
   
