@@ -8,6 +8,18 @@
 ## [Unreleased]
 
 ### Добавлено
+- Комплексные тесты для всех компонентов LISTENER (84 теста)
+  - Тесты для TCP соединений (tcp-connection.test.ts)
+  - Тесты для чтения ответов (response-reader.test.ts)
+  - Тесты для обработки ошибок подключения (error-handler.test.ts)
+  - Тесты для обработчика подключений (connection-handler.test.ts)
+  - Тесты для чтения запросов (request-reader.test.ts)
+  - Тесты для очистки запросов (request-cleanup.test.ts)
+  - Тесты для утилит listener (utils.test.ts)
+  - Тесты для конфигурации (config.test.ts)
+  - Тесты для управления папками (folder-manager.test.ts)
+  - Тесты для мониторинга (monitor.test.ts)
+- Правило в .cursorrules для автоматического запуска тестов после модификации кода
 - Git hooks для автоматической проверки кода перед коммитом
   - Pre-commit hook для запуска тестов и линтера
   - Автоматическая проверка Deno проектов (lint, type check, tests)
@@ -28,6 +40,13 @@
   - Обновлен ConnectionHandler для работы с протоколом (чтение .data, отправка на GOAL, запись .resp)
 
 ### Изменено
+- Реорганизована структура тестов по папкам компонентов
+  - Тесты для connection/ вынесены в tests/connection/
+  - Тесты для listener/ вынесены в tests/listener/
+  - Тесты для storage-provider/ вынесены в tests/storage-provider/
+  - Структура тестов теперь соответствует структуре компонентов
+- Переименованы файлы тестов с суффикса _test.ts на расширение .test.ts
+  - Все тесты теперь используют единый формат: `component-name.test.ts`
 - Рефакторинг LISTENER:
   - Вынесен класс Listener в отдельную папку `listener/`
   - Разбит на модули: config.ts, request-handler.ts, listener.ts, utils.ts

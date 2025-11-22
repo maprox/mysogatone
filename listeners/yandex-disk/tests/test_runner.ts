@@ -6,9 +6,25 @@
  */
 
 // Импортируем все тестовые файлы
-import "./utils_test.ts";
-import "./errors_test.ts";
-import "./file-operations_test.ts";
-import "./http-client_test.ts";
-import "./yandex-disk-provider_test.ts";
+
+// Storage Provider тесты
+import "./storage-provider/utils.test.ts";
+import "./storage-provider/errors.test.ts";
+import "./storage-provider/file-operations.test.ts";
+import "./storage-provider/http-client.test.ts";
+import "./storage-provider/yandex-disk-provider.test.ts";
+
+// Connection тесты
+import "./connection/tcp-connection.test.ts";
+import "./connection/response-reader.test.ts";
+import "./connection/error-handler.test.ts";
+import "./connection-handler.test.ts";
+
+// Listener тесты
+import "./listener/utils.test.ts";
+import "./listener/config.test.ts";
+import "./listener/request-reader.test.ts";
+import "./listener/request-cleanup.test.ts";
+import "./listener/folder-manager.test.ts";
+import "./monitor.test.ts";
 

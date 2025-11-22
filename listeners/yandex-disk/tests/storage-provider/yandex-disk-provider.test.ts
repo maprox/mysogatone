@@ -3,8 +3,8 @@
  */
 
 import { assertEquals, assertRejects, assertInstanceOf } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { YandexDiskProvider } from "../src/storage-provider/yandex-disk-provider.ts";
-import { YandexDiskApiError } from "../src/storage-provider/errors.ts";
+import { YandexDiskProvider } from "../../src/storage-provider/yandex-disk-provider.ts";
+import { YandexDiskApiError } from "../../src/storage-provider/errors.ts";
 
 Deno.test("YandexDiskProvider - создается с токеном", () => {
   const provider = new YandexDiskProvider("test-token");
