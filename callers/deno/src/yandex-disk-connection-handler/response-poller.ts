@@ -35,18 +35,55 @@ export async function pollForResponse(
   // Получаем имя папки из пути к файлу ответа
   const responsesFolder = responsePath.substring(0, responsePath.lastIndexOf("/"));
 
+  console.log(`[pollForResponse] Начало polling для ${requestId}, папка ответов: ${responsesFolder}`);
+  console.log(`[pollForResponse] Ищем файл ответа: ${responsePath}`);
+  console.log(`[pollForResponse] Ищем файл ошибки: ${errorPath}`);
   while (Date.now() - startTime < responseTimeout) {
     try {
       // Проверяем наличие ответа
       const files = await storageProvider.listFiles(responsesFolder);
-      const responseFile = files.find((f: FileInfo) => f.path === responsePath);
-      const errorFile = files.find((f: FileInfo) => f.path === errorPath);
+      console.log(`[pollForResponse] Проверка ответа для ${requestId}, найдено файлов: ${files.length}`);
+      if (files.length > 0) {
+        console.log(`[pollForResponse] Найденные файлы: ${files.map(f => f.path).join(', ')}`);
+      }
+      
+      // Нормализуем пути для сравнения (убираем префикс "disk:" и начальный "/" если есть)
+      const normalizePath = (path: string): string => {
+        let normalized = path.startsWith("disk:") ? path.substring(5) : path;
+        // Убираем начальный "/" если есть
+        if (normalized.startsWith("/")) {
+          normalized = normalized.substring(1);
+        }
+        return normalized;
+      };
+      
+      const normalizedResponsePath = normalizePath(responsePath);
+      const normalizedErrorPath = normalizePath(errorPath);
+      
+      console.log(`[pollForResponse] Нормализованный путь ответа: "${normalizedResponsePath}"`);
+      console.log(`[pollForResponse] Нормализованный путь ошибки: "${normalizedErrorPath}"`);
+      
+      const responseFile = files.find((f: FileInfo) => {
+        const normalized = normalizePath(f.path);
+        console.log(`[pollForResponse] Сравнение: "${normalized}" === "${normalizedResponsePath}" ? ${normalized === normalizedResponsePath}`);
+        return normalized === normalizedResponsePath;
+      });
+      const errorFile = files.find((f: FileInfo) => normalizePath(f.path) === normalizedErrorPath);
+      
+      if (responseFile) {
+        console.log(`[pollForResponse] ✅ Найден файл ответа: ${responseFile.path}`);
+      } else {
+        console.log(`[pollForResponse] ⏳ Файл ответа не найден, ищем: ${responsePath}`);
+      }
 
       if (responseFile) {
         // Читаем ответ
+        console.log(`[pollForResponse] ✅ Найден файл ответа для ${requestId}: ${responsePath}`);
         const responseData = await storageProvider.downloadFile(responsePath);
+        console.log(`[pollForResponse] Ответ прочитан: ${responseData.length} байт`);
         // Удаляем файл ответа
         await storageProvider.deleteFile(responsePath);
+        console.log(`[pollForResponse] Файл ответа удален`);
         onResponse(responseData);
         return;
       }

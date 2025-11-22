@@ -38,8 +38,10 @@ export class YandexDiskConnectionHandler implements ConnectionHandler {
     targetPort: number
   ): Promise<{ reader: ReadableStreamDefaultReader<Uint8Array>; writer: WritableStreamDefaultWriter<Uint8Array> }> {
     const requestId = generateRequestId();
+    console.log(`[YandexDiskConnectionHandler] Создание соединения для ${targetAddress}:${targetPort}, requestId: ${requestId}`);
     
     // Создаем метаданные запроса сразу
+    console.log(`[YandexDiskConnectionHandler] Создание метаданных запроса...`);
     await createRequestMetadata(
       requestId,
       targetAddress,
@@ -47,6 +49,7 @@ export class YandexDiskConnectionHandler implements ConnectionHandler {
       this.storageProvider,
       this.protocolPaths
     );
+    console.log(`[YandexDiskConnectionHandler] Метаданные запроса созданы`);
 
     // Создаем буфер для данных от клиента
     const clientDataBuffer: Uint8Array[] = [];

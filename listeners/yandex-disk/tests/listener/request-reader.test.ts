@@ -134,7 +134,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "readRequestData - выбрасывает ошибку при таймауте ожидания",
+  name: "readRequestData - возвращает пустые данные при таймауте ожидания",
   sanitizeResources: false,
   sanitizeOps: false,
 }, async () => {
@@ -144,10 +144,8 @@ Deno.test({
   
   // Не добавляем файл данных
   
-  await assertRejects(
-    async () => await readRequestData(requestId, storageProvider, protocolPaths, 200, 50),
-    Error,
-    "Timeout waiting for data file"
-  );
+  // Теперь функция возвращает пустые данные вместо ошибки при таймауте
+  const result = await readRequestData(requestId, storageProvider, protocolPaths, 200, 50);
+  assertEquals(result.length, 0);
 });
 

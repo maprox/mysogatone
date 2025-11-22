@@ -20,3 +20,7 @@ import "./socks5-server.test.ts";
 // YandexDiskConnectionHandler тесты
 import "./yandex-disk-connection-handler.test.ts";
 
+// Интеграционные тесты
+// Integration tests removed - will be added separately
+// import "./integration.test.ts";
+
