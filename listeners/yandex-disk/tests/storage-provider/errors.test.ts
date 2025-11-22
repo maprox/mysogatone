@@ -3,7 +3,7 @@
  */
 
 import { assertEquals, assertInstanceOf } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { YandexDiskApiError } from "../src/storage-provider/errors.ts";
+import { YandexDiskApiError } from "@src/storage-provider/errors.ts";
 
 Deno.test("YandexDiskApiError - создается с правильными свойствами", () => {
   const error = new YandexDiskApiError("Test error", 404, "NOT_FOUND");

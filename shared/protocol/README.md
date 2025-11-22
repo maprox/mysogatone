@@ -5,17 +5,19 @@
 ## Документация
 
 - [PROTOCOL.md](PROTOCOL.md) - Подробное описание протокола
-- [types.ts](types.ts) - TypeScript типы и утилиты для работы с протоколом
+- [types.ts](types.ts) - TypeScript типы для работы с протоколом
+- [utils.ts](utils.ts) - Утилиты для работы с протоколом
 
 ## Использование
 
 ### TypeScript/Deno
 
 ```typescript
-import { RequestMetadata, ProtocolPaths, ProtocolUtils } from "../../shared/protocol/types.ts";
+import { RequestMetadata, ProtocolPaths } from "../../shared/protocol/types.ts";
+import { generateRequestId } from "../../shared/protocol/utils.ts";
 
 // Генерация requestId
-const requestId = ProtocolUtils.generateRequestId();
+const requestId = generateRequestId();
 
 // Создание метаданных запроса
 const metadata: RequestMetadata = {

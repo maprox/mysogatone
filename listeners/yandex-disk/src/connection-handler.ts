@@ -4,69 +4,91 @@
  * Устанавливает TCP соединения с целевыми серверами и записывает ответы в Яндекс Диск.
  */
 
-import { StorageProvider } from "./storage-provider/index.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import type { ProtocolPaths } from "@shared/protocol/types.ts";
+import { RequestMetadata } from "@shared/protocol/types.ts";
+import { connectWithTimeout } from "@src/connection/tcp-connection.ts";
+import { readResponse } from "@src/connection/response-reader.ts";
+import { handleConnectionError } from "@src/connection/error-handler.ts";
 
-export interface ConnectionRequest {
-  targetAddress: string;
-  targetPort: number;
-  requestId: string;
+export interface ConnectionRequest extends RequestMetadata {
+  requestData: Uint8Array;
 }
 
 export class ConnectionHandler {
   private storageProvider: StorageProvider;
-  private responsesFolder: string;
+  private protocolPaths: ProtocolPaths;
+  private connectionTimeout: number; // в миллисекундах
   
-  constructor(storageProvider: StorageProvider, responsesFolder: string) {
+  constructor(
+    storageProvider: StorageProvider,
+    protocolPaths: ProtocolPaths,
+    connectionTimeout: number = 60000 // 60 секунд по умолчанию
+  ) {
     this.storageProvider = storageProvider;
-    this.responsesFolder = responsesFolder;
+    this.protocolPaths = protocolPaths;
+    this.connectionTimeout = connectionTimeout;
   }
   
   /**
-   * Обрабатывает запрос на подключение
+   * Обрабатывает запрос на подключение согласно протоколу
    */
   async handleConnection(request: ConnectionRequest): Promise<void> {
-    console.log(`Подключение к ${request.targetAddress}:${request.targetPort}`);
+    console.log(`[${request.requestId}] 🔌 Начало обработки запроса к ${request.targetAddress}:${request.targetPort}`);
+    console.log(`[${request.requestId}] 📦 Размер данных для отправки: ${request.requestData.length} байт`);
+    console.log(`[${request.requestId}] 📄 Первые 100 байт данных: ${new TextDecoder().decode(request.requestData.slice(0, 100))}`);
+    
+    let conn: Deno.TcpConn | null = null;
     
     try {
       // Устанавливаем TCP соединение с целевым сервером
-      const conn = await Deno.connect({
-        hostname: request.targetAddress,
-        port: request.targetPort,
-      });
+      console.log(`[${request.requestId}] 🔗 Попытка подключения к ${request.targetAddress}:${request.targetPort}...`);
+      conn = await connectWithTimeout(
+        request.targetAddress,
+        request.targetPort,
+        this.connectionTimeout
+      );
       
-      console.log(`Соединение установлено с ${request.targetAddress}:${request.targetPort}`);
+      console.log(`[${request.requestId}] ✅ Соединение установлено с ${request.targetAddress}:${request.targetPort}`);
       
-      // Читаем данные от целевого сервера
-      const buffer = new Uint8Array(4096);
-      const chunks: Uint8Array[] = [];
+      // Отправляем данные на целевой сервер
+      console.log(`[${request.requestId}] 📤 Отправка ${request.requestData.length} байт данных на GOAL...`);
+      await conn.write(request.requestData);
+      console.log(`[${request.requestId}] ✅ Данные отправлены успешно`);
       
-      let bytesRead: number | null;
-      while ((bytesRead = await conn.read(buffer)) !== null) {
-        if (bytesRead > 0) {
-          chunks.push(buffer.slice(0, bytesRead));
-        }
-      }
+      // Читаем ответ от целевого сервера
+      console.log(`[${request.requestId}] 📥 Чтение ответа от GOAL...`);
+      const responseData = await readResponse(conn);
+      console.log(`[${request.requestId}] ✅ Получено ${responseData.length} байт ответа`);
+      console.log(`[${request.requestId}] 📄 Первые 200 байт ответа: ${new TextDecoder().decode(responseData.slice(0, 200))}`);
       
-      // Объединяем все чанки
-      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-      const responseData = new Uint8Array(totalLength);
-      let offset = 0;
-      for (const chunk of chunks) {
-        responseData.set(chunk, offset);
-        offset += chunk.length;
-      }
-      
-      // Записываем ответ в Яндекс Диск
-      const responsePath = `${this.responsesFolder}/${request.requestId}.response`;
+      // Записываем ответ в файл согласно протоколу
+      const responsePath = this.protocolPaths.response(request.requestId);
+      console.log(`[${request.requestId}] 💾 Запись ответа в ${responsePath}...`);
       await this.storageProvider.uploadFile(responsePath, responseData);
       
-      console.log(`Ответ записан в ${responsePath}`);
-      
-      conn.close();
+      console.log(`[${request.requestId}] ✅ Ответ записан в ${responsePath} (${responseData.length} байт)`);
     } catch (error) {
-      console.error(`Ошибка при подключении к ${request.targetAddress}:${request.targetPort}:`, error);
+      console.error(`[${request.requestId}] ❌ Ошибка при обработке запроса:`, error);
+      await handleConnectionError(
+        request.requestId,
+        error,
+        this.storageProvider,
+        this.protocolPaths
+      );
       throw error;
+    } finally {
+      // Гарантируем закрытие соединения в любом случае
+      if (conn !== null) {
+        try {
+          conn.close();
+          console.log(`[${request.requestId}] 🔌 Соединение закрыто`);
+        } catch (closeError) {
+          console.warn(`[${request.requestId}] ⚠️  Ошибка при закрытии соединения:`, closeError);
+        }
+      }
     }
   }
+  
 }
 

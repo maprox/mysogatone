@@ -6,9 +6,19 @@ import { YandexDiskApiError } from "./errors.ts";
 import type { FileInfo } from "./types.ts";
 
 /**
+ * Тип элемента из API Яндекс Диска
+ */
+interface YandexDiskApiItem {
+  name: string;
+  path: string;
+  size?: number;
+  modified: string;
+}
+
+/**
  * Преобразование элемента API в FileInfo
  */
-export function mapToFileInfo(item: any): FileInfo {
+export function mapToFileInfo(item: YandexDiskApiItem): FileInfo {
   return {
     name: item.name,
     path: item.path,

@@ -11,8 +11,8 @@
  *   deno run --allow-net --allow-read --allow-env scripts/check-health.ts
  */
 
-import { YandexDiskProvider } from "../src/storage-provider/index.ts";
-import { YandexDiskApiError } from "../src/storage-provider/errors.ts";
+import { YandexDiskProvider } from "@src/storage-provider/index.ts";
+import { YandexDiskApiError } from "@src/storage-provider/errors.ts";
 
 async function checkHealth(token: string): Promise<boolean> {
   console.log("🔍 Проверка работоспособности YandexDiskProvider...\n");
