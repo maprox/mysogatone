@@ -134,7 +134,12 @@
 - PR #8: `feat: implement StorageProvider for CALLER Deno` - MERGED ✅
 - PR #9: `docs: add rule to use English for commit messages` - MERGED ✅
 - PR #10: `feat: implement SOCKS5 server and ConnectionHandler for CALLER Deno` - MERGED ✅
-- PR #11: `test: add comprehensive tests for YandexDiskConnectionHandler` - В процессе ⏳
+- PR #11: `test: add comprehensive tests for YandexDiskConnectionHandler` - MERGED ✅
+
+**Последний релиз**: v1.1.1 - 2025-01-22
+- Добавлены тесты для YandexDiskConnectionHandler (15 тестов)
+- Исправлена обработка ошибок в streams.ts
+- Исправлены тесты DefaultConnectionHandler
 
 **Следующая задача**: Интеграционное тестирование с LISTENER
 - Провести интеграционное тестирование между CALLER и LISTENER
