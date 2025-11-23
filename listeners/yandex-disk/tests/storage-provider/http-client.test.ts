@@ -161,8 +161,13 @@ Deno.test("shouldRetry - возвращает true для retryable ошибки
   assertEquals(shouldRetry(error, 0, 5), true);
 });
 
-Deno.test("shouldRetry - возвращает false для не-YandexDiskApiError", () => {
+Deno.test("shouldRetry - возвращает true для не-YandexDiskApiError", () => {
   const error = new Error("Network error");
+  assertEquals(shouldRetry(error, 0, 5), true);
+});
+
+Deno.test("shouldRetry - возвращает false для 404 ошибки", () => {
+  const error = new YandexDiskApiError("Not Found", 404);
   assertEquals(shouldRetry(error, 0, 5), false);
 });
 

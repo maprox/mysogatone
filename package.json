@@ -1,6 +1,6 @@
 {
   "name": "mysogatone",
-  "version": "1.0.1",
+  "version": "1.1.2",
   "description": "Система проксирования через облачные хранилища",
   "scripts": {
     "postinstall": "node scripts/install-hooks.js",

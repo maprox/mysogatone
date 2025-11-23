@@ -25,7 +25,10 @@ export interface CreateStreamsParams {
  */
 export function createStreams(
   params: CreateStreamsParams
-): { reader: ReadableStreamDefaultReader<Uint8Array>; writer: WritableStreamDefaultWriter<Uint8Array> } {
+): { 
+  reader: ReadableStreamDefaultReader<Uint8Array>; 
+  writer: WritableStreamDefaultWriter<Uint8Array>;
+} {
   const {
     requestId,
     dataBuffer,
@@ -38,6 +41,7 @@ export function createStreams(
 
   let pollingStarted = false;
   let uploadError: Error | null = null;
+  let dataFileCreated = false; // Флаг, что файл данных уже создан
 
   // Reader для чтения ответа от LISTENER
   const reader = new ReadableStream({
@@ -80,27 +84,66 @@ export function createStreams(
 
   // Writer для записи данных от клиента
   const writer = new WritableStream({
-    write(chunk: Uint8Array) {
+    async write(chunk: Uint8Array) {
       // Сохраняем данные в буфер
       dataBuffer.push(chunk);
+      const totalBytes = dataBuffer.reduce((sum, chunk) => sum + chunk.length, 0);
+      console.log(`[createStreams] Получены данные от клиента для ${requestId}: ${chunk.length} байт (всего: ${totalBytes} байт)`);
+      
+      // Если файл данных еще не создан, создаем его сразу после получения первых данных
+      // Это позволяет LISTENER начать обработку запроса, не дожидаясь закрытия writer
+      if (!dataFileCreated && totalBytes > 0) {
+        console.log(`[createStreams] Создание файла данных для ${requestId} с ${totalBytes} байт данных...`);
+        try {
+          await uploadRequestData(requestId, dataBuffer, storageProvider, protocolPaths);
+          console.log(`[createStreams] Файл данных создан для ${requestId}, начинаем polling`);
+          dataFileCreated = true;
+          onDataUploaded();
+          pollingStarted = true;
+        } catch (err) {
+          console.error(`[createStreams] Ошибка при создании файла данных для ${requestId}:`, err);
+          // Продолжаем работу, попробуем создать файл при закрытии writer
+        }
+      }
     },
     async close() {
-      // Загружаем данные в хранилище
-      console.log(`[createStreams] Writer закрыт для ${requestId}, загрузка данных в хранилище...`);
+      console.log(`[createStreams] Writer закрыт для ${requestId}, финальная загрузка данных...`);
+      const totalBytes = dataBuffer.reduce((sum, chunk) => sum + chunk.length, 0);
+      console.log(`[createStreams] Всего данных в буфере: ${dataBuffer.length} чанков, ${totalBytes} байт`);
+      
       try {
+        // Если файл данных еще не создан (данных не было), создаем пустой файл
+        // Если файл уже создан, обновляем его с финальными данными (на случай, если были дополнительные данные)
+        if (!dataFileCreated) {
+          console.log(`[createStreams] Создание файла данных для ${requestId} (пустой или с данными)...`);
+        } else {
+          console.log(`[createStreams] Обновление файла данных для ${requestId} с финальными данными...`);
+        }
+        
         await uploadRequestData(requestId, dataBuffer, storageProvider, protocolPaths);
-        console.log(`[createStreams] Данные загружены в хранилище для ${requestId}, начинаем polling`);
-        onDataUploaded();
-        pollingStarted = true;
+        
+        if (!dataFileCreated) {
+          console.log(`[createStreams] Файл данных создан для ${requestId}, начинаем polling`);
+          dataFileCreated = true;
+          onDataUploaded();
+          pollingStarted = true;
+        } else {
+          console.log(`[createStreams] Файл данных обновлен для ${requestId}`);
+        }
       } catch (err) {
         // Сохраняем ошибку и устанавливаем флаг, чтобы reader мог ее обработать
         console.error(`[createStreams] Ошибка при загрузке данных для ${requestId}:`, err);
         uploadError = err instanceof Error ? err : new Error(String(err));
-        pollingStarted = true;
+        if (!pollingStarted) {
+          pollingStarted = true;
+        }
       }
     },
   }).getWriter();
 
-  return { reader, writer };
+  return { 
+    reader, 
+    writer
+  };
 }
 

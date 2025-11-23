@@ -55,6 +55,7 @@ export class YandexDiskConnectionHandler implements ConnectionHandler {
     const clientDataBuffer: Uint8Array[] = [];
 
     // Создаем потоки для передачи данных
+    // Файл данных будет создан при закрытии writer (когда появятся данные или соединение закроется)
     const { reader, writer } = createStreams({
       requestId,
       dataBuffer: clientDataBuffer,
@@ -64,6 +65,7 @@ export class YandexDiskConnectionHandler implements ConnectionHandler {
       responseTimeout: this.responseTimeout,
       onDataUploaded: () => {
         // Данные загружены в хранилище
+        console.log(`[YandexDiskConnectionHandler] Данные загружены, polling начат для ${requestId}`);
       },
     });
 

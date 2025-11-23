@@ -3,7 +3,7 @@
  */
 
 /**
- * Читает ответ от соединения с таймаутом
+ * Читает ответ от TCP соединения с таймаутом
  */
 export async function readResponse(
   conn: Deno.TcpConn,
@@ -61,8 +61,11 @@ export async function readResponse(
   const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
   console.log(`[readResponse] Всего прочитано: ${totalLength} байт из ${chunks.length} чанков`);
   
+  // Если данных нет, возвращаем пустой массив вместо ошибки
+  // Это может быть нормально для некоторых протоколов или когда запрос был пустым
   if (totalLength === 0) {
-    throw new Error("No data received from server");
+    console.log(`[readResponse] ⚠️  Данных не получено, возвращаем пустой ответ`);
+    return new Uint8Array(0);
   }
   
   const responseData = new Uint8Array(totalLength);

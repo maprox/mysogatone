@@ -17,12 +17,21 @@ export function shouldRetry(
   if (attempt >= maxRetries) {
     return false;
   }
-  // Retry для всех ошибок кроме некоторых критических
-  return (
-    error instanceof YandexDiskApiError &&
-    error.statusCode !== 401 &&
-    error.statusCode !== 403
-  );
+  
+  // Не делаем retry для критических ошибок
+  if (error instanceof YandexDiskApiError) {
+    // 401 - неавторизован, 403 - запрещено - не retry
+    if (error.statusCode === 401 || error.statusCode === 403) {
+      return false;
+    }
+    // 404 - файл не найден - это нормально, не retry (будет обработано через polling)
+    if (error.statusCode === 404) {
+      return false;
+    }
+  }
+  
+  // Retry для остальных ошибок (500, 502, 503, network errors и т.д.)
+  return true;
 }
 
 /**
@@ -93,8 +102,11 @@ export async function executeWithRetryLogic(
 
       // Retry с exponential backoff
       if (config.maxRetries > 0) {
+        const errorMessage = lastError instanceof YandexDiskApiError
+          ? `Status ${lastError.statusCode}: ${lastError.message}`
+          : lastError.message || String(lastError);
         console.warn(
-          `Request failed. Retrying after ${delay}ms (attempt ${attempt + 1}/${config.maxRetries})`
+          `Request failed: ${errorMessage}. Retrying after ${delay}ms (attempt ${attempt + 1}/${config.maxRetries})`
         );
         await sleep(delay);
         delay = calculateDelay(delay, null, config);
@@ -105,6 +117,11 @@ export async function executeWithRetryLogic(
     }
   }
 
-  throw lastError || new Error("Request failed after all retries");
+  const finalError = lastError || new Error("Request failed after all retries");
+  const errorMessage = finalError instanceof YandexDiskApiError
+    ? `Status ${finalError.statusCode}: ${finalError.message}`
+    : finalError.message || String(finalError);
+  console.error(`Request failed after all retries: ${errorMessage}`);
+  throw finalError;
 }
 

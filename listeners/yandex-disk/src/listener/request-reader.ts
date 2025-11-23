@@ -46,30 +46,71 @@ export async function readRequestData(
 ): Promise<Uint8Array> {
   const dataPath = protocolPaths.requestData(requestId);
 
+  // Проверяем, является ли ошибка ошибкой "файл не найден" (404)
+  const isFileNotFoundError = (error: unknown): boolean => {
+    // Проверяем различные типы ошибок
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      const statusCode = (error as { statusCode: number }).statusCode;
+      return statusCode === 404;
+    }
+    if (error instanceof Error) {
+      // Проверяем сообщение об ошибке
+      const message = error.message.toLowerCase();
+      return message.includes('404') || 
+             message.includes('not found') || 
+             message.includes('файл не найден');
+    }
+    return false;
+  };
+
   // Сначала пытаемся прочитать файл
   try {
     return await storageProvider.downloadFile(dataPath);
-  } catch (_error) {
-    // Если файл данных еще не создан, ждем его
-    console.log(`⏳ Ожидание файла данных для ${requestId}...`);
+  } catch (error) {
+    // Если файл данных еще не создан (404), ждем его
+    if (isFileNotFoundError(error)) {
+      console.log(`⏳ Файл данных для ${requestId} еще не создан (404), ожидание...`);
+    } else {
+      // Другая ошибка - логируем детали и продолжаем ждать
+      const errorDetails = error instanceof Error 
+        ? `${error.name}: ${error.message}${error instanceof Error && 'statusCode' in error ? ` (status: ${(error as { statusCode: number }).statusCode})` : ''}`
+        : String(error);
+      console.log(`⏳ Ошибка при чтении файла данных для ${requestId}: ${errorDetails}, ожидание...`);
+    }
   }
 
   // Ожидаем появления файла данных (polling)
   const startTime = Date.now();
+  let attempt = 0;
 
   while (Date.now() - startTime < maxWaitTime) {
+    attempt++;
     try {
       const data = await storageProvider.downloadFile(dataPath);
+      console.log(`✅ Файл данных для ${requestId} найден после ${attempt} попыток`);
       return data;
-    } catch (_error) {
-      // Файл еще не создан, ждем
+    } catch (error) {
+      // Если это ошибка "файл не найден", продолжаем ждать
+      if (isFileNotFoundError(error)) {
+        // Файл еще не создан, ждем
+        if (attempt % 5 === 0) { // Логируем каждую 5-ю попытку, чтобы не спамить
+          console.log(`⏳ Попытка ${attempt}: файл данных для ${requestId} еще не найден (404), продолжаем ожидание...`);
+        }
+        await sleep(checkInterval);
+        continue;
+      }
+      // Другая ошибка - логируем детали и продолжаем ждать
+      const errorDetails = error instanceof Error 
+        ? `${error.name}: ${error.message}${error instanceof Error && 'statusCode' in error ? ` (status: ${(error as { statusCode: number }).statusCode})` : ''}`
+        : String(error);
+      console.log(`⏳ Попытка ${attempt}: ошибка при чтении файла данных для ${requestId}: ${errorDetails}, продолжаем ожидание...`);
       await sleep(checkInterval);
     }
   }
 
   // Если файл данных не появился за отведенное время, возвращаем пустой массив
   // Это позволяет обработать запросы, где данные еще не загружены или запрос пустой
-  console.log(`⚠️  Файл данных ${dataPath} не найден после ожидания ${maxWaitTime}ms, используем пустые данные`);
+  console.log(`⚠️  Файл данных ${dataPath} не найден после ожидания ${maxWaitTime}ms (${attempt} попыток), используем пустые данные`);
   return new Uint8Array(0);
 }
 
