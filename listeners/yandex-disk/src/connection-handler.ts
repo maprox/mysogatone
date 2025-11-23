@@ -42,7 +42,9 @@ export class ConnectionHandler {
     
     try {
       // Устанавливаем TCP соединение с целевым сервером
-      console.log(`[${request.requestId}] 🔗 Попытка подключения к ${request.targetAddress}:${request.targetPort}...`);
+      // ВАЖНО: Прокси всегда использует обычное TCP, даже для HTTPS (порт 443)
+      // TLS handshake выполняет клиент, прокси просто передает байты
+      console.log(`[${request.requestId}] 🔗 Попытка подключения к ${request.targetAddress}:${request.targetPort} (TCP)...`);
       conn = await connectWithTimeout(
         request.targetAddress,
         request.targetPort,
@@ -53,16 +55,39 @@ export class ConnectionHandler {
       
       // Отправляем данные на целевой сервер
       console.log(`[${request.requestId}] 📤 Отправка ${request.requestData.length} байт данных на GOAL...`);
-      await conn.write(request.requestData);
-      console.log(`[${request.requestId}] ✅ Данные отправлены успешно`);
+      if (request.requestData.length > 0) {
+        await conn.write(request.requestData);
+        console.log(`[${request.requestId}] ✅ Данные отправлены успешно`);
+      } else {
+        console.log(`[${request.requestId}] ⚠️  Данных для отправки нет (0 байт), пропускаем отправку`);
+      }
       
       // Читаем ответ от целевого сервера
+      // Если данных не было отправлено, сервер может не отвечать сразу
+      // В этом случае ждем ответа дольше или возвращаем пустой ответ
       console.log(`[${request.requestId}] 📥 Чтение ответа от GOAL...`);
-      const responseData = await readResponse(conn);
-      console.log(`[${request.requestId}] ✅ Получено ${responseData.length} байт ответа`);
-      console.log(`[${request.requestId}] 📄 Первые 200 байт ответа: ${new TextDecoder().decode(responseData.slice(0, 200))}`);
+      let responseData: Uint8Array;
       
-      // Записываем ответ в файл согласно протоколу
+      try {
+        responseData = await readResponse(conn);
+        console.log(`[${request.requestId}] ✅ Получено ${responseData.length} байт ответа`);
+        if (responseData.length > 0) {
+          console.log(`[${request.requestId}] 📄 Первые 200 байт ответа: ${new TextDecoder().decode(responseData.slice(0, 200))}`);
+        }
+      } catch (error) {
+        // Если данных не было отправлено и сервер не отвечает, это может быть нормально
+        // Например, для HTTPS соединений нужен TLS handshake, который не выполнен
+        if (request.requestData.length === 0 && error instanceof Error && error.message === "No data received from server") {
+          console.log(`[${request.requestId}] ⚠️  Сервер не ответил на пустой запрос, это может быть нормально для некоторых протоколов`);
+          console.log(`[${request.requestId}] 💡 Возможно, требуется TLS handshake или данные будут отправлены позже`);
+          // Возвращаем пустой ответ вместо ошибки
+          responseData = new Uint8Array(0);
+        } else {
+          throw error;
+        }
+      }
+      
+      // Записываем ответ в файл согласно протоколу (даже если он пустой)
       const responsePath = this.protocolPaths.response(request.requestId);
       console.log(`[${request.requestId}] 💾 Запись ответа в ${responsePath}...`);
       await this.storageProvider.uploadFile(responsePath, responseData);

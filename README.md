@@ -116,6 +116,8 @@ cd callers/android
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Подробная архитектура системы
 - [GIT_HOOKS.md](GIT_HOOKS.md) - Настройка Git hooks для автоматической проверки кода
+- [WINDOWS_TESTING.md](WINDOWS_TESTING.md) - Инструкция по тестированию на Windows
+- [TESTING_RESULTS.md](TESTING_RESULTS.md) - Результаты тестирования HTTP/HTTPS
 - [shared/protocol/PROTOCOL.md](shared/protocol/PROTOCOL.md) - Протокол передачи данных через файлы
 - [listeners/yandex-disk/README.md](listeners/yandex-disk/README.md) - Документация LISTENER
 - [callers/android/README.md](callers/android/README.md) - Документация CALLER для Android

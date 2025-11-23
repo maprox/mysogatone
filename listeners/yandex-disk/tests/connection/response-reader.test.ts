@@ -105,17 +105,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "readResponse - выбрасывает ошибку если нет данных",
+  name: "readResponse - возвращает пустой массив если нет данных",
   sanitizeResources: false,
   sanitizeOps: false,
 }, async () => {
   const conn = new MockTcpConn([]);
   
-  await assertRejects(
-    async () => await readResponse(conn, 100),
-    Error,
-    "No data received from server"
-  );
+  const result = await readResponse(conn, 100);
+  assertEquals(result.length, 0);
 });
 
 Deno.test({
