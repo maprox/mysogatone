@@ -2,6 +2,8 @@
  * TCP/TLS соединение с таймаутом
  */
 
+import type { TcpConn } from "@src/connection/types.ts";
+
 /**
  * Устанавливает TCP соединение с таймаутом
  *
@@ -18,7 +20,7 @@ export async function connectWithTimeout(
   hostname: string,
   port: number,
   timeout: number,
-): Promise<Deno.TcpConn> {
+): Promise<TcpConn> {
   // Для прокси-сервера ВСЕГДА используется обычное TCP соединение
   // TLS handshake делает клиент, прокси просто передает байты
   const connectPromise = Deno.connect({ hostname, port });

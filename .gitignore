@@ -36,6 +36,8 @@ Desktop.ini
 
 # Logs
 *.log
+*-log.jsonl
+delay-log.jsonl
 
 # Local configuration
 local.properties

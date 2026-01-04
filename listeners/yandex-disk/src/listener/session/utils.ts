@@ -3,6 +3,7 @@
  */
 
 import { getLogger } from "@shared/logger/file-logger.ts";
+import type { TcpConn } from "@src/connection/types.ts";
 import type { Session } from "@src/listener/session/types.ts";
 
 export function updateSessionActivity(session: Session): void {
@@ -13,7 +14,7 @@ export function createSession(
   sessionId: string,
   targetAddress: string,
   targetPort: number,
-  tcpConnection: Deno.TcpConn,
+  tcpConnection: TcpConn,
 ): Session {
   // Создаем общий reader для непрерывного чтения (как в DelayedConnectionHandler)
   const reader = tcpConnection.readable.getReader();
@@ -36,7 +37,7 @@ export async function connectWithTimeout(
   targetAddress: string,
   targetPort: number,
   timeout: number,
-): Promise<Deno.TcpConn> {
+): Promise<TcpConn> {
   const connectPromise = Deno.connect({
     hostname: targetAddress,
     port: targetPort,
@@ -63,7 +64,7 @@ export async function connectWithTimeout(
   }
 }
 
-export function closeConnection(conn: Deno.TcpConn, sessionId: string): void {
+export function closeConnection(conn: TcpConn, sessionId: string): void {
   try {
     conn.close();
     console.log(

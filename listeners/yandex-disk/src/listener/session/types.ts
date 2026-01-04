@@ -2,11 +2,13 @@
  * Типы для управления сессиями
  */
 
+import type { TcpConn } from "@src/connection/types.ts";
+
 export interface Session {
   sessionId: string;
   targetAddress: string;
   targetPort: number;
-  tcpConnection: Deno.TcpConn;
+  tcpConnection: TcpConn;
   createdAt: Date;
   lastActivityAt: Date;
   requestIds: string[];

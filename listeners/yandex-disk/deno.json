@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
-    "lib": ["deno.window"]
+    "lib": ["deno.window", "deno.ns"]
   },
   "imports": {
     "@src/": "./src/",
