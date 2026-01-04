@@ -3,6 +3,8 @@
  * Отвечает за создание, хранение и закрытие TCP соединений по sessionId.
  */
 
+import type { TcpConn } from "@src/connection/types.ts";
+
 import type {
   ConnectionStore as ConnectionStoreInterface,
   Logger,
@@ -12,21 +14,21 @@ import type {
  * Хранилище активных TCP соединений
  */
 export class ConnectionStore implements ConnectionStoreInterface {
-  private connections = new Map<string, Deno.TcpConn>();
+  private connections = new Map<string, TcpConn>();
 
   constructor(private logger: Logger) {}
 
   /**
    * Сохраняет соединение для указанной сессии
    */
-  set(sessionId: string, connection: Deno.TcpConn): void {
+  set(sessionId: string, connection: TcpConn): void {
     this.connections.set(sessionId, connection);
   }
 
   /**
    * Получает соединение для указанной сессии
    */
-  get(sessionId: string): Deno.TcpConn | undefined {
+  get(sessionId: string): TcpConn | undefined {
     return this.connections.get(sessionId);
   }
 

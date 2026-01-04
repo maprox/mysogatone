@@ -5,11 +5,13 @@
  * deno run --allow-net --allow-env scripts/test-socks5-simple.ts
  */
 
+import type { TcpConn } from "../src/connection/types.ts";
+
 /**
  * SOCKS5 клиент для простого тестирования
  */
 class SimpleSocks5Client {
-  private conn: Deno.TcpConn | null = null;
+  private conn: TcpConn | null = null;
 
   async connect(serverHost: string, serverPort: number): Promise<void> {
     this.conn = await Deno.connect({

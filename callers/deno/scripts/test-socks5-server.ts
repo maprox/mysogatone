@@ -9,11 +9,13 @@
  *    deno run --allow-net scripts/test-socks5-server.ts
  */
 
+import type { TcpConn } from "../src/connection/types.ts";
+
 /**
  * SOCKS5 клиент для тестирования сервера
  */
 class Socks5TestClient {
-  private conn: Deno.TcpConn | null = null;
+  private conn: TcpConn | null = null;
 
   /**
    * Подключается к SOCKS5 серверу

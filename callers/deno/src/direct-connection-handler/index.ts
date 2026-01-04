@@ -7,6 +7,7 @@
  */
 
 import type { ConnectionHandler } from "@src/connection-handler.ts";
+import type { TcpConn } from "@src/connection/types.ts";
 
 import type {
   ConnectionFactory,
@@ -59,7 +60,7 @@ export class DirectConnectionHandler implements ConnectionHandler {
       targetPort,
     );
 
-    let conn: Deno.TcpConn;
+    let conn: TcpConn;
 
     if (sessionInfo.useSessions) {
       this.logger.info(
