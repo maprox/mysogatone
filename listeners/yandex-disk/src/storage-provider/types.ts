@@ -7,17 +7,17 @@ export interface StorageProvider {
    * Читает список файлов в указанной папке
    */
   listFiles(folderPath: string): Promise<FileInfo[]>;
-  
+
   /**
    * Загружает файл из хранилища
    */
   downloadFile(filePath: string): Promise<Uint8Array>;
-  
+
   /**
    * Загружает файл в хранилище
    */
   uploadFile(filePath: string, data: Uint8Array): Promise<void>;
-  
+
   /**
    * Удаляет файл из хранилища
    */
@@ -40,4 +40,3 @@ export interface RetryConfig {
   maxDelayMs: number;
   backoffMultiplier: number;
 }
-

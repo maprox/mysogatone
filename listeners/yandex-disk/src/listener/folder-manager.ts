@@ -2,16 +2,16 @@
  * Управление папками на Яндекс Диске
  */
 
-import type { StorageProvider } from "@src/storage-provider/index.ts";
-import { normalizePath, buildApiUrl } from "@src/storage-provider/utils.ts";
 import { createAuthHeaders } from "@src/storage-provider/http-client.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import { buildApiUrl, normalizePath } from "@src/storage-provider/utils.ts";
 
 /**
  * Создает папку на Яндекс Диске
  */
 export async function createFolder(
   folderPath: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<void> {
   const baseUrl = "https://cloud-api.yandex.net/v1/disk";
   const path = normalizePath(folderPath);
@@ -38,7 +38,7 @@ export async function createFolder(
 export async function ensureFolderExists(
   folderPath: string,
   storageProvider: StorageProvider,
-  accessToken: string
+  accessToken: string,
 ): Promise<void> {
   try {
     await storageProvider.listFiles(folderPath);
@@ -52,7 +52,10 @@ export async function ensureFolderExists(
         await createFolder(folderPath, accessToken);
         console.log(`✅ Папка ${folderPath} создана`);
       } catch (createError) {
-        console.warn(`⚠️  Не удалось создать папку ${folderPath}:`, createError);
+        console.warn(
+          `⚠️  Не удалось создать папку ${folderPath}:`,
+          createError,
+        );
       }
     } else {
       console.warn(`⚠️  Ошибка при проверке папки ${folderPath}:`, error);
@@ -68,7 +71,7 @@ export async function ensureFoldersExist(
   requestsFolder: string,
   responsesFolder: string,
   storageProvider: StorageProvider,
-  accessToken: string
+  accessToken: string,
 ): Promise<void> {
   // Создаем базовую папку .mysogatone, если её нет
   try {
@@ -80,7 +83,10 @@ export async function ensureFoldersExist(
       await createFolder(baseFolder, accessToken);
       console.log(`✅ Базовая папка ${baseFolder} создана`);
     } catch (createError) {
-      console.warn(`⚠️  Не удалось создать базовую папку ${baseFolder}:`, createError);
+      console.warn(
+        `⚠️  Не удалось создать базовую папку ${baseFolder}:`,
+        createError,
+      );
     }
   }
 
@@ -90,4 +96,3 @@ export async function ensureFoldersExist(
   // Создаем папку responses, если её нет
   await ensureFolderExists(responsesFolder, storageProvider, accessToken);
 }
-

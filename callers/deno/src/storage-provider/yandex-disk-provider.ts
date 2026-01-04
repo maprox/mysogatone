@@ -2,10 +2,21 @@
  * Реализация StorageProvider для Яндекс Диск
  */
 
-import type { StorageProvider, FileInfo, RetryConfig } from "./types.ts";
-import { normalizePath, buildApiUrl } from "./utils.ts";
-import { createAuthHeaders, executeWithRetry } from "./http-client.ts";
-import { mapToFileInfo, getOperationLink, executeFileOperation } from "./file-operations.ts";
+import {
+  executeFileOperation,
+  getOperationLink,
+  mapToFileInfo,
+} from "@src/storage-provider/file-operations.ts";
+import {
+  createAuthHeaders,
+  executeWithRetry,
+} from "@src/storage-provider/http-client.ts";
+import type {
+  FileInfo,
+  RetryConfig,
+  StorageProvider,
+} from "@src/storage-provider/types.ts";
+import { buildApiUrl, normalizePath } from "@src/storage-provider/utils.ts";
 
 /**
  * Реализация StorageProvider для Яндекс Диск
@@ -32,7 +43,7 @@ export class YandexDiskProvider implements StorageProvider {
    */
   private makeRequest(
     url: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<Response> {
     const headers = createAuthHeaders(this.accessToken);
     if (options.headers) {
@@ -44,7 +55,7 @@ export class YandexDiskProvider implements StorageProvider {
     return executeWithRetry(
       url,
       { ...options, headers },
-      this.retryConfig
+      this.retryConfig,
     );
   }
 
@@ -110,4 +121,3 @@ export class YandexDiskProvider implements StorageProvider {
     await this.makeRequest(url, { method: "DELETE" });
   }
 }
-

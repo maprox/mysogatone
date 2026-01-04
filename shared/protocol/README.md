@@ -13,7 +13,8 @@
 ### TypeScript/Deno
 
 ```typescript
-import { RequestMetadata, ProtocolPaths } from "../../shared/protocol/types.ts";
+import { RequestMetadata } from "../../shared/protocol/types.ts";
+import { ProtocolPaths } from "../../shared/protocol/paths.ts";
 import { generateRequestId } from "../../shared/protocol/utils.ts";
 
 // Генерация requestId

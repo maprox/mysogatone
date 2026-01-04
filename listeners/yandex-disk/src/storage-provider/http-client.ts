@@ -2,10 +2,10 @@
  * HTTP клиент с поддержкой retry и обработки ошибок
  */
 
-import { YandexDiskApiError } from "./errors.ts";
-import type { RetryConfig } from "./types.ts";
-import { handleRateLimit } from "./rate-limit-handler.ts";
-import { executeWithRetryLogic } from "./retry-strategy.ts";
+import { YandexDiskApiError } from "@src/storage-provider/errors.ts";
+import { handleRateLimit } from "@src/storage-provider/rate-limit-handler.ts";
+import { executeWithRetryLogic } from "@src/storage-provider/retry-strategy.ts";
+import type { RetryConfig } from "@src/storage-provider/types.ts";
 
 /**
  * Создание заголовков запроса с авторизацией
@@ -20,7 +20,9 @@ export function createAuthHeaders(accessToken: string): Headers {
 /**
  * Парсинг ошибки из ответа API
  */
-export async function parseApiError(response: Response): Promise<YandexDiskApiError> {
+export async function parseApiError(
+  response: Response,
+): Promise<YandexDiskApiError> {
   let errorMessage = `API request failed with status ${response.status}`;
   let errorCode: string | undefined;
 
@@ -61,14 +63,13 @@ export async function parseApiError(response: Response): Promise<YandexDiskApiEr
 export async function executeWithRetry(
   url: string,
   options: RequestInit,
-  config: RetryConfig
+  config: RetryConfig,
 ): Promise<Response> {
   return await executeWithRetryLogic(
     url,
     options,
     config,
     handleRateLimit,
-    parseApiError
+    parseApiError,
   );
 }
-

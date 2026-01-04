@@ -5,7 +5,7 @@
  */
 
 import { YandexDiskProvider } from "@src/storage-provider/index.ts";
-import { ProtocolPaths } from "@shared/protocol/types.ts";
+import { ProtocolPaths } from "@shared/protocol/paths.ts";
 import { parseRequestId } from "@shared/protocol/utils.ts";
 
 /**

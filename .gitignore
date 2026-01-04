@@ -60,3 +60,26 @@ hs_err_pid*
 node_modules/
 package-lock.json
 
+logs/caller-https-test-20251213-144432.log.err
+logs/caller-https-test-20251213-150646.log.err
+logs/caller-https-test-20251213-151219.log.err
+logs/https-test-result-20251213-144052.log.curl
+logs/https-test-result-20251213-144052.log.curl.err
+logs/https-test-result-20251213-144148.log.curl
+logs/https-test-result-20251213-144148.log.curl.err
+logs/https-test-result-20251213-144236.log.curl
+logs/https-test-result-20251213-144236.log.curl.err
+logs/https-test-result-20251213-144338.log.curl
+logs/https-test-result-20251213-144338.log.curl.err
+logs/https-test-result-20251213-144432.log.curl
+logs/https-test-result-20251213-144432.log.curl.err
+logs/https-test-result-20251213-150446.log.curl
+logs/https-test-result-20251213-150446.log.curl.err
+logs/https-test-result-20251213-150646.log.curl
+logs/https-test-result-20251213-150646.log.curl.err
+logs/https-test-result-20251213-151219.log.curl
+logs/https-test-result-20251213-151219.log.curl.err
+logs/listener-https-test-20251213-144432.log.err
+logs/listener-https-test-20251213-150446.log.err
+logs/listener-https-test-20251213-150646.log.err
+logs/listener-https-test-20251213-151219.log.err

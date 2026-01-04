@@ -4,7 +4,7 @@
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { cleanupRequest } from "@src/listener/request-cleanup.ts";
-import { ProtocolPaths } from "@shared/protocol/types.ts";
+import { ProtocolPaths } from "@shared/protocol/paths.ts";
 
 // Мок StorageProvider для тестирования
 class MockStorageProvider {
@@ -35,19 +35,27 @@ Deno.test("cleanupRequest - удаляет файлы метаданных и д
   const requestId = "test-request-id";
   
   const metadataPath = protocolPaths.requestMetadata(requestId);
-  const dataPath = protocolPaths.requestData(requestId);
+  const readyPath = protocolPaths.requestDataReady(requestId);
+  const chunk0Path = protocolPaths.requestDataChunk(requestId, 0);
+  const chunk1Path = protocolPaths.requestDataChunk(requestId, 1);
   
   // Добавляем файлы
   storageProvider.files.set(metadataPath, new Uint8Array([1]));
-  storageProvider.files.set(dataPath, new Uint8Array([2]));
+  storageProvider.files.set(readyPath, new TextEncoder().encode(JSON.stringify({ totalChunks: 2, totalBytes: 10 })));
+  storageProvider.files.set(chunk0Path, new Uint8Array([2]));
+  storageProvider.files.set(chunk1Path, new Uint8Array([3]));
   
   await cleanupRequest(requestId, storageProvider, protocolPaths);
   
   // Проверяем, что файлы были удалены
   assertEquals(storageProvider.deletedFiles.has(metadataPath), true);
-  assertEquals(storageProvider.deletedFiles.has(dataPath), true);
+  assertEquals(storageProvider.deletedFiles.has(readyPath), true);
+  assertEquals(storageProvider.deletedFiles.has(chunk0Path), true);
+  assertEquals(storageProvider.deletedFiles.has(chunk1Path), true);
   assertEquals(storageProvider.files.has(metadataPath), false);
-  assertEquals(storageProvider.files.has(dataPath), false);
+  assertEquals(storageProvider.files.has(readyPath), false);
+  assertEquals(storageProvider.files.has(chunk0Path), false);
+  assertEquals(storageProvider.files.has(chunk1Path), false);
 });
 
 Deno.test("cleanupRequest - игнорирует ошибки удаления", async () => {
@@ -61,9 +69,12 @@ Deno.test("cleanupRequest - игнорирует ошибки удаления",
   await cleanupRequest(requestId, storageProvider, protocolPaths);
   
   // Проверяем, что попытка удаления была сделана
+  // Функция пытается удалить метаданные, ready файл и чанки (0-100, если ready не найден)
   const metadataPath = protocolPaths.requestMetadata(requestId);
-  const dataPath = protocolPaths.requestData(requestId);
+  const readyPath = protocolPaths.requestDataReady(requestId);
+  const chunk0Path = protocolPaths.requestDataChunk(requestId, 0);
   assertEquals(storageProvider.deletedFiles.has(metadataPath), true);
-  assertEquals(storageProvider.deletedFiles.has(dataPath), true);
+  assertEquals(storageProvider.deletedFiles.has(readyPath), true);
+  assertEquals(storageProvider.deletedFiles.has(chunk0Path), true);
 });
 

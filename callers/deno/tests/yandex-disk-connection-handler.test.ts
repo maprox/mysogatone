@@ -4,11 +4,11 @@
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import type { StorageProvider, FileInfo } from "../src/storage-provider/types.ts";
-import { ProtocolPaths } from "@shared/protocol/types.ts";
+import { ProtocolPaths } from "@shared/protocol/paths.ts";
 import { YandexDiskConnectionHandler } from "../src/yandex-disk-connection-handler/index.ts";
-import { createRequestMetadata, uploadRequestData } from "../src/yandex-disk-connection-handler/request-creation.ts";
-import { pollForResponse } from "../src/yandex-disk-connection-handler/response-poller.ts";
-import { createStreams } from "../src/yandex-disk-connection-handler/streams.ts";
+import { createRequestMetadata, uploadRequestData } from "../src/yandex-disk-connection-handler/request-creation/index.ts";
+import { pollForResponse } from "../src/yandex-disk-connection-handler/response-poller/index.ts";
+import { createStreams } from "../src/yandex-disk-connection-handler/streams/index.ts";
 
 /**
  * Мок StorageProvider для тестирования
@@ -151,9 +151,11 @@ Deno.test({
   const targetPort = 443;
 
   await createRequestMetadata(
-    requestId,
-    targetAddress,
-    targetPort,
+    {
+      requestId,
+      targetAddress,
+      targetPort,
+    },
     storageProvider,
     protocolPaths
   );
@@ -185,9 +187,11 @@ Deno.test({
   await assertRejects(
     async () => {
       await createRequestMetadata(
-        "test-id",
-        "example.com",
-        443,
+        {
+          requestId: "test-id",
+          targetAddress: "example.com",
+          targetPort: 443,
+        },
         storageProvider,
         protocolPaths
       );
@@ -578,9 +582,13 @@ Deno.test({
   assertEquals(dataBuffer.length, 1);
   assertEquals(dataBuffer[0].length, 5);
 
-  // Проверяем, что данные были загружены в хранилище
-  const dataPath = protocolPaths.requestData(requestId);
-  assertEquals(storageProvider.hasFile(dataPath), true);
+  // Проверяем, что данные были загружены в хранилище как чанки
+  const chunkPath = protocolPaths.requestDataChunk(requestId, 0);
+  assertEquals(storageProvider.hasFile(chunkPath), true);
+  
+  // Проверяем, что файл готовности создан
+  const readyPath = protocolPaths.requestDataReady(requestId);
+  assertEquals(storageProvider.hasFile(readyPath), true);
 
   // Читаем ответ
   const result = await reader.read();

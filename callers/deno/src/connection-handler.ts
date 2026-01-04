@@ -9,7 +9,7 @@
 export interface ConnectionHandler {
   /**
    * Устанавливает соединение с целевым сервером.
-   * 
+   *
    * @param targetAddress IP адрес или доменное имя целевого сервера
    * @param targetPort Порт целевого сервера
    * @returns Promise с парами (reader, writer) для передачи данных
@@ -17,7 +17,11 @@ export interface ConnectionHandler {
    */
   connect(
     targetAddress: string,
-    targetPort: number
-  ): Promise<{ reader: ReadableStreamDefaultReader<Uint8Array>; writer: WritableStreamDefaultWriter<Uint8Array> }>;
+    targetPort: number,
+  ): Promise<
+    {
+      reader: ReadableStreamDefaultReader<Uint8Array>;
+      writer: WritableStreamDefaultWriter<Uint8Array>;
+    }
+  >;
 }
-

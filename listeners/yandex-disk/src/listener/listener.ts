@@ -1,21 +1,22 @@
 /**
  * Основной класс LISTENER
- * 
+ *
  * Сервер в интернете, который мониторит Яндекс Диск и обрабатывает запросы на подключение.
  */
 
-import type { StorageProvider } from "@src/storage-provider/index.ts";
-import { Monitor } from "@src/monitor.ts";
+import { ProtocolPaths } from "@shared/protocol/paths.ts";
 import { ConnectionHandler } from "@src/connection-handler.ts";
-import { ProtocolPaths } from "@shared/protocol/types.ts";
-import type { ListenerConfig } from "./config.ts";
+import type { ListenerConfig } from "@src/listener/config.ts";
+import { ensureFoldersExist } from "@src/listener/folder-manager.ts";
 import {
-  processRequest,
   extractRequestIdFromPath,
-} from "./request-handler.ts";
-import { sleep } from "./utils.ts";
-import { ensureFoldersExist } from "./folder-manager.ts";
-import { setupSignalHandlers } from "./signal-handler.ts";
+  processRequest,
+} from "@src/listener/request-handler.ts";
+import { SessionManager } from "@src/listener/session/manager.ts";
+import { setupSignalHandlers } from "@src/listener/signal-handler.ts";
+import { sleep } from "@src/listener/utils.ts";
+import { Monitor } from "@src/monitor.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
 
 /**
  * Основной класс LISTENER
@@ -28,26 +29,33 @@ export class Listener {
   private config: ListenerConfig;
   private running: boolean = false;
   private processingRequests: Set<string> = new Set();
+  private sessionManager: SessionManager;
+  private sessionCleanupInterval?: number;
 
   constructor(
     config: ListenerConfig,
-    storageProvider: StorageProvider
+    storageProvider: StorageProvider,
   ) {
     this.config = config;
     this.storageProvider = storageProvider;
     this.protocolPaths = new ProtocolPaths(
       config.requestsFolder,
-      config.responsesFolder
+      config.responsesFolder,
     );
     this.monitor = new Monitor(
       this.storageProvider,
       config.requestsFolder,
-      config.pollInterval
+      config.pollInterval,
     );
+
+    // Создаем SessionManager для поддержки постоянных соединений (HTTPS)
+    this.sessionManager = new SessionManager();
+
     this.connectionHandler = new ConnectionHandler(
       this.storageProvider,
       this.protocolPaths,
-      config.connectionTimeout
+      config.connectionTimeout,
+      this.sessionManager,
     );
   }
 
@@ -69,11 +77,16 @@ export class Listener {
       this.config.requestsFolder,
       this.config.responsesFolder,
       this.storageProvider,
-      this.config.accessToken
+      this.config.accessToken,
     );
 
     // Обработка сигналов для graceful shutdown (устанавливаем ДО запуска monitor)
     setupSignalHandlers(() => this.stop());
+
+    // Периодическая очистка неактивных сессий (каждые 60 секунд)
+    this.sessionCleanupInterval = setInterval(() => {
+      this.sessionManager.cleanupInactiveSessions(60000); // 60 секунд неактивности
+    }, 60000);
 
     // Запускаем мониторинг (блокирующий вызов с бесконечным циклом)
     await this.monitor.start((fileInfo) => this.handleNewFile(fileInfo));
@@ -91,6 +104,14 @@ export class Listener {
     this.running = false;
     this.monitor.stop();
 
+    // Останавливаем очистку сессий
+    if (this.sessionCleanupInterval) {
+      clearInterval(this.sessionCleanupInterval);
+    }
+
+    // Закрываем все активные сессии
+    this.sessionManager.closeAllSessions();
+
     // Ждем завершения обработки текущих запросов
     await this.waitForPendingRequests();
 
@@ -104,13 +125,17 @@ export class Listener {
     console.log(`[Listener] handleNewFile вызван для пути: ${fileInfo.path}`);
     const requestId = extractRequestIdFromPath(fileInfo.path);
     if (!requestId) {
-      console.log(`[Listener] Не удалось извлечь requestId из ${fileInfo.path}, пропускаем`);
+      console.log(
+        `[Listener] Не удалось извлечь requestId из ${fileInfo.path}, пропускаем`,
+      );
       return;
     }
 
     // Проверяем, не обрабатывается ли уже этот запрос
     if (this.processingRequests.has(requestId)) {
-      console.log(`[Listener] Запрос ${requestId} уже обрабатывается, пропускаем`);
+      console.log(
+        `[Listener] Запрос ${requestId} уже обрабатывается, пропускаем`,
+      );
       return;
     }
 
@@ -153,11 +178,9 @@ export class Listener {
   private async waitForPendingRequests(): Promise<void> {
     while (this.processingRequests.size > 0) {
       console.log(
-        `⏳ Ожидание завершения ${this.processingRequests.size} запросов...`
+        `⏳ Ожидание завершения ${this.processingRequests.size} запросов...`,
       );
       await sleep(1000);
     }
   }
-
 }
-

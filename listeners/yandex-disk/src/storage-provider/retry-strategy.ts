@@ -2,9 +2,9 @@
  * Стратегия retry для HTTP запросов
  */
 
-import { YandexDiskApiError } from "./errors.ts";
-import type { RetryConfig } from "./types.ts";
-import { sleep, calculateDelay } from "./utils.ts";
+import { YandexDiskApiError } from "@src/storage-provider/errors.ts";
+import type { RetryConfig } from "@src/storage-provider/types.ts";
+import { calculateDelay, sleep } from "@src/storage-provider/utils.ts";
 
 /**
  * Проверка, нужно ли делать retry для ошибки
@@ -12,12 +12,12 @@ import { sleep, calculateDelay } from "./utils.ts";
 export function shouldRetry(
   error: Error,
   attempt: number,
-  maxRetries: number
+  maxRetries: number,
 ): boolean {
   if (attempt >= maxRetries) {
     return false;
   }
-  
+
   // Не делаем retry для критических ошибок
   if (error instanceof YandexDiskApiError) {
     // 401 - неавторизован, 403 - запрещено - не retry
@@ -29,7 +29,7 @@ export function shouldRetry(
       return false;
     }
   }
-  
+
   // Retry для остальных ошибок (500, 502, 503, network errors и т.д.)
   return true;
 }
@@ -39,7 +39,7 @@ export function shouldRetry(
  */
 export async function executeRequest(
   url: string,
-  options: RequestInit
+  options: RequestInit,
 ): Promise<Response> {
   try {
     const response = await fetch(url, options);
@@ -60,9 +60,9 @@ export async function executeWithRetryLogic(
     response: Response,
     attempt: number,
     delay: number,
-    config: RetryConfig
+    config: RetryConfig,
   ) => Promise<number | null>,
-  parseApiErrorFn: (response: Response) => Promise<YandexDiskApiError>
+  parseApiErrorFn: (response: Response) => Promise<YandexDiskApiError>,
 ): Promise<Response> {
   let lastError: Error | null = null;
   let delay = config.initialDelayMs;
@@ -82,7 +82,7 @@ export async function executeWithRetryLogic(
           response,
           attempt,
           delay,
-          config
+          config,
         );
         if (newDelay !== null) {
           delay = newDelay;
@@ -106,7 +106,9 @@ export async function executeWithRetryLogic(
           ? `Status ${lastError.statusCode}: ${lastError.message}`
           : lastError.message || String(lastError);
         console.warn(
-          `Request failed: ${errorMessage}. Retrying after ${delay}ms (attempt ${attempt + 1}/${config.maxRetries})`
+          `Request failed: ${errorMessage}. Retrying after ${delay}ms (attempt ${
+            attempt + 1
+          }/${config.maxRetries})`,
         );
         await sleep(delay);
         delay = calculateDelay(delay, null, config);
@@ -124,4 +126,3 @@ export async function executeWithRetryLogic(
   console.error(`Request failed after all retries: ${errorMessage}`);
   throw finalError;
 }
-

@@ -1,5 +1,13 @@
 {
   "version": "5",
+  "specifiers": {
+    "jsr:@ganitzsh/lint-import-order@*": "0.1.0"
+  },
+  "jsr": {
+    "@ganitzsh/lint-import-order@0.1.0": {
+      "integrity": "25b20d3ba21622c3ef3582fbcff424716329f002bddee4ae291d6d419f753a85"
+    }
+  },
   "remote": {
     "https://deno.land/std@0.211.0/assert/_constants.ts": "a271e8ef5a573f1df8e822a6eb9d09df064ad66a4390f21b3e31f820a38e0975",
     "https://deno.land/std@0.211.0/assert/_diff.ts": "6a2d68f2c42d73a1e31818a4195f40598d672c7f02ac75c7f1b1e6789852c2bc",

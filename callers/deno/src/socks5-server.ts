@@ -3,8 +3,8 @@
  * Принимает входящие соединения и обрабатывает их через Socks5Handler.
  */
 
-import type { ConnectionHandler } from "./connection-handler.ts";
-import { Socks5Handler } from "./socks5-handler.ts";
+import type { ConnectionHandler } from "@src/connection-handler.ts";
+import { Socks5Handler } from "@src/socks5-handler.ts";
 
 /**
  * SOCKS5 сервер.
@@ -34,7 +34,9 @@ export class Socks5Server {
           const conn = await this.listener.accept();
           const remoteAddr = conn.remoteAddr;
           if (remoteAddr.transport === "tcp") {
-            console.log(`New connection from ${remoteAddr.hostname}:${remoteAddr.port}`);
+            console.log(
+              `New connection from ${remoteAddr.hostname}:${remoteAddr.port}`,
+            );
           } else {
             console.log(`New connection from ${JSON.stringify(remoteAddr)}`);
           }
@@ -76,4 +78,3 @@ export class Socks5Server {
     return this.running;
   }
 }
-

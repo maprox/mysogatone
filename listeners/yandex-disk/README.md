@@ -208,7 +208,8 @@ deno task health [YOUR_TOKEN]
 
 Протокол использует файлы в облачном хранилище:
 - `requests/{requestId}.req` - метаданные запроса (JSON)
-- `requests/{requestId}.data` - данные для отправки на GOAL (binary)
+- `requests/{requestId}.chunk.N` - чанки данных для отправки на GOAL (binary, где N - номер чанка)
+- `requests/{requestId}.ready` - файл-маркер готовности данных с метаданными (JSON: {totalChunks, totalBytes})
 - `responses/{requestId}.resp` - ответ от GOAL (binary)
 - `responses/{requestId}.error` - ошибка при обработке (JSON)
 

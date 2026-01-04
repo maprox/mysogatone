@@ -2,7 +2,8 @@
  * Обработчик SOCKS5 протокола для одного клиента.
  */
 
-import type { ConnectionHandler } from "./connection-handler.ts";
+import { getLogger } from "@shared/logger/file-logger.ts";
+import type { ConnectionHandler } from "@src/connection-handler.ts";
 
 /**
  * SOCKS5 константы
@@ -37,35 +38,42 @@ export class Socks5Handler {
    * Обрабатывает SOCKS5 соединение.
    */
   async handle(): Promise<void> {
-    console.log("[Socks5Handler] Начало обработки соединения");
+    const logger = getLogger();
+    logger.info("[Socks5Handler] Начало обработки соединения");
     try {
       const reader = this.conn.readable.getReader();
       const writer = this.conn.writable.getWriter();
-      console.log("[Socks5Handler] Reader и Writer созданы");
+      logger.info("[Socks5Handler] Reader и Writer созданы");
 
       // Этап 1: Handshake
-      console.log("[Socks5Handler] Начало handshake...");
+      logger.info("[Socks5Handler] Начало handshake...");
       if (!(await this.handleHandshake(reader, writer))) {
-        console.log("[Socks5Handler] Handshake не удался");
+        logger.info("[Socks5Handler] Handshake не удался");
         return;
       }
-      console.log("[Socks5Handler] Handshake успешен");
+      logger.info("[Socks5Handler] Handshake успешен");
 
       // Этап 2: Запрос на подключение
-      console.log("[Socks5Handler] Начало обработки CONNECT запроса...");
+      logger.info("[Socks5Handler] Начало обработки CONNECT запроса...");
       const targetStreams = await this.handleConnectRequest(reader, writer);
       if (!targetStreams) {
-        console.log("[Socks5Handler] CONNECT запрос не обработан");
+        logger.info("[Socks5Handler] CONNECT запрос не обработан");
         return;
       }
-      console.log("[Socks5Handler] CONNECT запрос обработан успешно");
+      logger.info("[Socks5Handler] CONNECT запрос обработан успешно");
 
       // Этап 3: Передача данных
-      console.log("[Socks5Handler] Начало передачи данных...");
-      await this.transferData(reader, writer, targetStreams.reader, targetStreams.writer);
-      console.log("[Socks5Handler] Передача данных завершена");
+      logger.info("[Socks5Handler] Начало передачи данных...");
+      await this.transferData(
+        reader,
+        writer,
+        targetStreams.reader,
+        targetStreams.writer,
+      );
+      logger.info("[Socks5Handler] Передача данных завершена");
     } catch (error) {
-      console.error("Error handling SOCKS5 connection:", error);
+      const logger = getLogger();
+      logger.error("Error handling SOCKS5 connection:", error);
     } finally {
       try {
         this.conn.close();
@@ -81,14 +89,18 @@ export class Socks5Handler {
    */
   private async handleHandshake(
     reader: ReadableStreamDefaultReader<Uint8Array>,
-    writer: WritableStreamDefaultWriter<Uint8Array>
+    writer: WritableStreamDefaultWriter<Uint8Array>,
   ): Promise<boolean> {
     console.log("[Socks5Handler] handleHandshake: начало");
     try {
       // Читаем версию SOCKS (1 байт)
       console.log("[Socks5Handler] handleHandshake: чтение версии...");
       const versionData = await this.readBytes(reader, 1);
-      console.log(`[Socks5Handler] handleHandshake: версия прочитана: ${versionData.length > 0 ? versionData[0] : 'пусто'}`);
+      console.log(
+        `[Socks5Handler] handleHandshake: версия прочитана: ${
+          versionData.length > 0 ? versionData[0] : "пусто"
+        }`,
+      );
       if (versionData.length === 0 || versionData[0] !== SOCKS_VERSION) {
         return false;
       }
@@ -111,7 +123,9 @@ export class Socks5Handler {
 
       // Проверяем наличие метода No Auth (0x00)
       const hasNoAuth = methodsData.includes(METHOD_NO_AUTH);
-      console.log(`[Socks5Handler] handleHandshake: методы прочитаны, No Auth найден: ${hasNoAuth}`);
+      console.log(
+        `[Socks5Handler] handleHandshake: методы прочитаны, No Auth найден: ${hasNoAuth}`,
+      );
       if (!hasNoAuth) {
         // Отправляем ответ об отсутствии поддерживаемых методов
         console.log("[Socks5Handler] handleHandshake: метод No Auth не найден");
@@ -123,7 +137,9 @@ export class Socks5Handler {
       // Отправляем ответ: версия SOCKS5, метод No Auth
       console.log("[Socks5Handler] handleHandshake: отправка ответа...");
       await writer.write(new Uint8Array([SOCKS_VERSION, METHOD_NO_AUTH]));
-      console.log("[Socks5Handler] handleHandshake: ответ отправлен, handshake успешен");
+      console.log(
+        "[Socks5Handler] handleHandshake: ответ отправлен, handshake успешен",
+      );
 
       return true;
     } catch (error) {
@@ -138,32 +154,64 @@ export class Socks5Handler {
    */
   private async handleConnectRequest(
     reader: ReadableStreamDefaultReader<Uint8Array>,
-    writer: WritableStreamDefaultWriter<Uint8Array>
-  ): Promise<{ reader: ReadableStreamDefaultReader<Uint8Array>; writer: WritableStreamDefaultWriter<Uint8Array> } | null> {
+    writer: WritableStreamDefaultWriter<Uint8Array>,
+  ): Promise<
+    {
+      reader: ReadableStreamDefaultReader<Uint8Array>;
+      writer: WritableStreamDefaultWriter<Uint8Array>;
+    } | null
+  > {
     console.log("[Socks5Handler] handleConnectRequest: начало");
     try {
       // Читаем версию SOCKS (1 байт)
       console.log("[Socks5Handler] handleConnectRequest: чтение версии...");
       const versionData = await this.readBytes(reader, 1);
-      console.log(`[Socks5Handler] handleConnectRequest: версия прочитана: ${versionData.length > 0 ? versionData[0] : 'пусто'}`);
+      console.log(
+        `[Socks5Handler] handleConnectRequest: версия прочитана: ${
+          versionData.length > 0 ? versionData[0] : "пусто"
+        }`,
+      );
       if (versionData.length === 0 || versionData[0] !== SOCKS_VERSION) {
-        await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+        await this.sendConnectReply(
+          writer,
+          REPLY_GENERAL_FAILURE,
+          "0.0.0.0",
+          0,
+        );
         return null;
       }
 
       // Читаем команду (1 байт)
       console.log("[Socks5Handler] handleConnectRequest: чтение команды...");
       const commandData = await this.readBytes(reader, 1);
-      console.log(`[Socks5Handler] handleConnectRequest: команда прочитана: ${commandData.length > 0 ? commandData[0] : 'пусто'}`);
+      console.log(
+        `[Socks5Handler] handleConnectRequest: команда прочитана: ${
+          commandData.length > 0 ? commandData[0] : "пусто"
+        }`,
+      );
       if (commandData.length === 0) {
-        console.log("[Socks5Handler] handleConnectRequest: команда не прочитана");
-        await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+        console.log(
+          "[Socks5Handler] handleConnectRequest: команда не прочитана",
+        );
+        await this.sendConnectReply(
+          writer,
+          REPLY_GENERAL_FAILURE,
+          "0.0.0.0",
+          0,
+        );
         return null;
       }
       const command = commandData[0];
-      console.log(`[Socks5Handler] handleConnectRequest: команда: ${command} (ожидается ${CMD_CONNECT})`);
+      console.log(
+        `[Socks5Handler] handleConnectRequest: команда: ${command} (ожидается ${CMD_CONNECT})`,
+      );
       if (command !== CMD_CONNECT) {
-        await this.sendConnectReply(writer, REPLY_COMMAND_NOT_SUPPORTED, "0.0.0.0", 0);
+        await this.sendConnectReply(
+          writer,
+          REPLY_COMMAND_NOT_SUPPORTED,
+          "0.0.0.0",
+          0,
+        );
         return null;
       }
 
@@ -173,7 +221,12 @@ export class Socks5Handler {
       // Читаем тип адреса (1 байт)
       const addressTypeData = await this.readBytes(reader, 1);
       if (addressTypeData.length === 0) {
-        await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+        await this.sendConnectReply(
+          writer,
+          REPLY_GENERAL_FAILURE,
+          "0.0.0.0",
+          0,
+        );
         return null;
       }
       const addressType = addressTypeData[0];
@@ -185,23 +238,40 @@ export class Socks5Handler {
           // IPv4 адрес (4 байта)
           const ipBytes = await this.readBytes(reader, 4);
           if (ipBytes.length !== 4) {
-            await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+            await this.sendConnectReply(
+              writer,
+              REPLY_GENERAL_FAILURE,
+              "0.0.0.0",
+              0,
+            );
             return null;
           }
-          targetAddress = `${ipBytes[0]}.${ipBytes[1]}.${ipBytes[2]}.${ipBytes[3]}`;
+          targetAddress = `${ipBytes[0]}.${ipBytes[1]}.${ipBytes[2]}.${
+            ipBytes[3]
+          }`;
           break;
         }
         case ADDR_TYPE_DOMAIN: {
           // Доменное имя
           const domainLengthData = await this.readBytes(reader, 1);
           if (domainLengthData.length === 0) {
-            await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+            await this.sendConnectReply(
+              writer,
+              REPLY_GENERAL_FAILURE,
+              "0.0.0.0",
+              0,
+            );
             return null;
           }
           const domainLength = domainLengthData[0];
           const domainBytes = await this.readBytes(reader, domainLength);
           if (domainBytes.length !== domainLength) {
-            await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+            await this.sendConnectReply(
+              writer,
+              REPLY_GENERAL_FAILURE,
+              "0.0.0.0",
+              0,
+            );
             return null;
           }
           targetAddress = new TextDecoder().decode(domainBytes);
@@ -210,36 +280,78 @@ export class Socks5Handler {
         case ADDR_TYPE_IPV6: {
           // IPv6 адрес (16 байт) - пока не поддерживаем
           await this.readBytes(reader, 16);
-          await this.sendConnectReply(writer, REPLY_ADDRESS_TYPE_NOT_SUPPORTED, "0.0.0.0", 0);
+          await this.sendConnectReply(
+            writer,
+            REPLY_ADDRESS_TYPE_NOT_SUPPORTED,
+            "0.0.0.0",
+            0,
+          );
           return null;
         }
         default: {
-          await this.sendConnectReply(writer, REPLY_ADDRESS_TYPE_NOT_SUPPORTED, "0.0.0.0", 0);
+          await this.sendConnectReply(
+            writer,
+            REPLY_ADDRESS_TYPE_NOT_SUPPORTED,
+            "0.0.0.0",
+            0,
+          );
           return null;
         }
       }
 
       // Читаем порт (2 байта, big-endian)
-      console.log(`[Socks5Handler] handleConnectRequest: чтение порта (2 байта)...`);
+      console.log(
+        `[Socks5Handler] handleConnectRequest: чтение порта (2 байта)...`,
+      );
       const portData = await this.readBytes(reader, 2);
-      console.log(`[Socks5Handler] handleConnectRequest: порт прочитан: ${portData.length} байт из 2, данные: [${Array.from(portData).map(b => '0x' + b.toString(16).padStart(2, '0')).join(', ')}]`);
+      console.log(
+        `[Socks5Handler] handleConnectRequest: порт прочитан: ${portData.length} байт из 2, данные: [${
+          Array.from(portData).map((b) =>
+            "0x" + b.toString(16).padStart(2, "0")
+          ).join(", ")
+        }]`,
+      );
       if (portData.length !== 2) {
-        console.log(`[Socks5Handler] handleConnectRequest: ошибка - порт не полностью прочитан (${portData.length} из 2 байт)`);
-        await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+        console.log(
+          `[Socks5Handler] handleConnectRequest: ошибка - порт не полностью прочитан (${portData.length} из 2 байт)`,
+        );
+        await this.sendConnectReply(
+          writer,
+          REPLY_GENERAL_FAILURE,
+          "0.0.0.0",
+          0,
+        );
         return null;
       }
       const targetPort = (portData[0] << 8) | portData[1];
-      console.log(`[Socks5Handler] handleConnectRequest: порт распознан: ${targetPort}`);
+      console.log(
+        `[Socks5Handler] handleConnectRequest: порт распознан: ${targetPort}`,
+      );
 
       // Устанавливаем соединение через ConnectionHandler
-      console.log(`[Socks5Handler] Вызов connectionHandler.connect(${targetAddress}, ${targetPort})...`);
+      console.log(
+        `[Socks5Handler] Вызов connectionHandler.connect(${targetAddress}, ${targetPort})...`,
+      );
       let targetStreams;
       try {
-        targetStreams = await this.connectionHandler.connect(targetAddress, targetPort);
-        console.log(`[Socks5Handler] connectionHandler.connect завершен успешно`);
+        targetStreams = await this.connectionHandler.connect(
+          targetAddress,
+          targetPort,
+        );
+        console.log(
+          `[Socks5Handler] connectionHandler.connect завершен успешно`,
+        );
       } catch (error) {
-        console.error(`[Socks5Handler] Failed to connect to ${targetAddress}:${targetPort}:`, error);
-        await this.sendConnectReply(writer, REPLY_CONNECTION_REFUSED, "0.0.0.0", 0);
+        console.error(
+          `[Socks5Handler] Failed to connect to ${targetAddress}:${targetPort}:`,
+          error,
+        );
+        await this.sendConnectReply(
+          writer,
+          REPLY_CONNECTION_REFUSED,
+          "0.0.0.0",
+          0,
+        );
         return null;
       }
 
@@ -247,9 +359,16 @@ export class Socks5Handler {
       console.log(`[Socks5Handler] Отправка успешного ответа CONNECT...`);
       // Используем адрес сервера для ответа
       const localAddr = this.conn.localAddr;
-      const serverAddress = localAddr.transport === "tcp" ? localAddr.hostname : "0.0.0.0";
+      const serverAddress = localAddr.transport === "tcp"
+        ? localAddr.hostname
+        : "0.0.0.0";
       const serverPort = localAddr.transport === "tcp" ? localAddr.port : 0;
-      await this.sendConnectReply(writer, REPLY_SUCCESS, serverAddress, serverPort);
+      await this.sendConnectReply(
+        writer,
+        REPLY_SUCCESS,
+        serverAddress,
+        serverPort,
+      );
       console.log(`[Socks5Handler] Ответ CONNECT отправлен успешно`);
 
       // Возвращаем потоки для передачи данных
@@ -257,7 +376,12 @@ export class Socks5Handler {
     } catch (error) {
       console.error("Error in connect request:", error);
       try {
-        await this.sendConnectReply(writer, REPLY_GENERAL_FAILURE, "0.0.0.0", 0);
+        await this.sendConnectReply(
+          writer,
+          REPLY_GENERAL_FAILURE,
+          "0.0.0.0",
+          0,
+        );
       } catch {
         // Игнорируем ошибки отправки ответа
       }
@@ -272,7 +396,7 @@ export class Socks5Handler {
     writer: WritableStreamDefaultWriter<Uint8Array>,
     replyCode: number,
     address: string,
-    port: number
+    port: number,
   ): Promise<void> {
     const addressParts = address.split(".");
     if (addressParts.length !== 4) {
@@ -303,8 +427,15 @@ export class Socks5Handler {
       port & 0xFF,
     ]);
 
-    console.log(`[Socks5Handler] sendConnectReply: отправка ответа (${reply.length} байт), код: ${replyCode}, адрес: ${address}, порт: ${port}`);
-    console.log(`[Socks5Handler] sendConnectReply: данные ответа: [${Array.from(reply).map(b => '0x' + b.toString(16).padStart(2, '0')).join(', ')}]`);
+    console.log(
+      `[Socks5Handler] sendConnectReply: отправка ответа (${reply.length} байт), код: ${replyCode}, адрес: ${address}, порт: ${port}`,
+    );
+    console.log(
+      `[Socks5Handler] sendConnectReply: данные ответа: [${
+        Array.from(reply).map((b) => "0x" + b.toString(16).padStart(2, "0"))
+          .join(", ")
+      }]`,
+    );
     await writer.write(reply);
     console.log(`[Socks5Handler] sendConnectReply: ответ записан в writer`);
   }
@@ -316,39 +447,158 @@ export class Socks5Handler {
     clientReader: ReadableStreamDefaultReader<Uint8Array>,
     clientWriter: WritableStreamDefaultWriter<Uint8Array>,
     targetReader: ReadableStreamDefaultReader<Uint8Array>,
-    targetWriter: WritableStreamDefaultWriter<Uint8Array>
+    targetWriter: WritableStreamDefaultWriter<Uint8Array>,
   ): Promise<void> {
+    console.log(
+      "[Socks5Handler] transferData: запуск двунаправленной передачи данных...",
+    );
     // Запускаем две асинхронные задачи для двунаправленной передачи данных
-    const clientToTarget = this.pipeStream(clientReader, targetWriter);
-    const targetToClient = this.pipeStream(targetReader, clientWriter);
+    const clientToTarget = this.pipeStream(
+      clientReader,
+      targetWriter,
+      "client->target",
+    );
+    const targetToClient = this.pipeStream(
+      targetReader,
+      clientWriter,
+      "target->client",
+    );
 
     // Ждем завершения обеих задач
-    await Promise.allSettled([clientToTarget, targetToClient]);
+    const results = await Promise.allSettled([clientToTarget, targetToClient]);
+    console.log(
+      `[Socks5Handler] transferData: обе задачи завершены. client->target: ${
+        results[0].status
+      }, target->client: ${results[1].status}`,
+    );
   }
 
   /**
    * Передает данные из reader в writer.
+   * Добавлены таймауты для чтения, чтобы обнаружить проблемы с передачей данных.
    */
   private async pipeStream(
     reader: ReadableStreamDefaultReader<Uint8Array>,
-    writer: WritableStreamDefaultWriter<Uint8Array>
+    writer: WritableStreamDefaultWriter<Uint8Array>,
+    direction?: string,
   ): Promise<void> {
+    const streamId = direction || "unknown";
+    const startTime = Date.now();
+    const logger = getLogger();
+    logger.info(
+      `[Socks5Handler] [${startTime}] pipeStream начат для ${streamId}`,
+    );
+    let totalBytes = 0;
+    let chunkCount = 0;
+    const readTimeout = 30000; // 30 секунд таймаут для чтения
+    let lastReadTime = startTime;
+
     try {
       while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
+        const now = Date.now();
+        // Проверяем таймаут чтения
+        const timeSinceLastRead = now - lastReadTime;
+        if (timeSinceLastRead > readTimeout) {
+          logger.info(
+            `[Socks5Handler] [${now}] pipeStream таймаут чтения для ${streamId}: ${timeSinceLastRead}ms без данных (таймаут: ${readTimeout}ms)`,
+          );
+          throw new Error(
+            `Read timeout: no data received for ${timeSinceLastRead}ms`,
+          );
+        }
+
+        // Читаем с таймаутом
+        const readStartTime = Date.now();
+        const readPromise = reader.read();
+        const timeoutPromise = new Promise<
+          { done: boolean; value?: Uint8Array }
+        >((_, reject) => {
+          setTimeout(
+            () =>
+              reject(
+                new Error(
+                  `Read timeout: no data received for ${readTimeout}ms`,
+                ),
+              ),
+            readTimeout,
+          );
+        });
+
+        let result: { done: boolean; value?: Uint8Array };
+        try {
+          result = await Promise.race([readPromise, timeoutPromise]);
+        } catch (timeoutError) {
+          const timeoutTime = Date.now();
+          const logger = getLogger();
+          logger.info(
+            `[Socks5Handler] [${timeoutTime}] pipeStream таймаут чтения для ${streamId} (ожидание данных, прошло: ${
+              timeoutTime - readStartTime
+            }ms)`,
+          );
+          throw timeoutError;
+        }
+
+        const readEndTime = Date.now();
+        lastReadTime = readEndTime;
+
+        if (result.done) {
+          const logger = getLogger();
+          logger.info(
+            `[Socks5Handler] [${readEndTime}] pipeStream завершен для ${streamId}: done=true, всего ${totalBytes} байт в ${chunkCount} чанках (время работы: ${
+              readEndTime - startTime
+            }ms)`,
+          );
           break;
         }
-        if (value) {
-          await writer.write(value);
+        if (result.value) {
+          chunkCount++;
+          totalBytes += result.value.length;
+          const logger = getLogger();
+          logger.info(
+            `[Socks5Handler] [${readEndTime}] pipeStream передача для ${streamId}: ${result.value.length} байт (чанк #${chunkCount}, всего ${totalBytes} байт, задержка чтения: ${
+              readEndTime - readStartTime
+            }ms)`,
+          );
+          await writer.write(result.value);
         }
       }
-    } catch {
-      // Соединение закрыто или ошибка
+    } catch (error) {
+      const errorTime = Date.now();
+      const logger = getLogger();
+      logger.info(
+        `[Socks5Handler] [${errorTime}] pipeStream ошибка для ${streamId}:`,
+        error,
+      );
+      // Соединение закрыто или ошибка - отменяем reader, чтобы уведомить другую сторону
+      try {
+        await reader.cancel();
+        const cancelTime = Date.now();
+        logger.info(
+          `[Socks5Handler] [${cancelTime}] pipeStream reader отменен для ${streamId} из-за ошибки`,
+        );
+      } catch (cancelError) {
+        const cancelErrorTime = Date.now();
+        logger.info(
+          `[Socks5Handler] [${cancelErrorTime}] pipeStream ошибка при отмене reader для ${streamId}:`,
+          cancelError,
+        );
+        // Игнорируем ошибки отмены
+      }
     } finally {
       try {
+        const closeTime = Date.now();
+        const logger = getLogger();
+        logger.info(
+          `[Socks5Handler] [${closeTime}] pipeStream закрытие writer для ${streamId}`,
+        );
         await writer.close();
-      } catch {
+      } catch (error) {
+        const closeErrorTime = Date.now();
+        const logger = getLogger();
+        logger.info(
+          `[Socks5Handler] [${closeErrorTime}] pipeStream ошибка при закрытии writer для ${streamId}:`,
+          error,
+        );
         // Игнорируем ошибки закрытия
       }
     }
@@ -360,9 +610,13 @@ export class Socks5Handler {
    */
   private async readBytes(
     reader: ReadableStreamDefaultReader<Uint8Array>,
-    count: number
+    count: number,
   ): Promise<Uint8Array> {
-    console.log(`[Socks5Handler] readBytes: запрос на чтение ${count} байт, буфер: ${this.buffer.length - this.bufferOffset} байт`);
+    console.log(
+      `[Socks5Handler] readBytes: запрос на чтение ${count} байт, буфер: ${
+        this.buffer.length - this.bufferOffset
+      } байт`,
+    );
     const result = new Uint8Array(count);
     let offset = 0;
 
@@ -370,7 +624,10 @@ export class Socks5Handler {
     if (this.buffer.length > this.bufferOffset) {
       const available = this.buffer.length - this.bufferOffset;
       const toCopy = Math.min(available, count);
-      result.set(this.buffer.slice(this.bufferOffset, this.bufferOffset + toCopy), 0);
+      result.set(
+        this.buffer.slice(this.bufferOffset, this.bufferOffset + toCopy),
+        0,
+      );
       offset = toCopy;
       this.bufferOffset += toCopy;
 
@@ -383,11 +640,21 @@ export class Socks5Handler {
 
     // Читаем остальные данные из потока
     while (offset < count) {
-      console.log(`[Socks5Handler] readBytes: чтение из потока, нужно еще ${count - offset} байт...`);
+      console.log(
+        `[Socks5Handler] readBytes: чтение из потока, нужно еще ${
+          count - offset
+        } байт...`,
+      );
       const { done, value } = await reader.read();
-      console.log(`[Socks5Handler] readBytes: прочитано из потока: done=${done}, value.length=${value?.length || 0}`);
+      console.log(
+        `[Socks5Handler] readBytes: прочитано из потока: done=${done}, value.length=${
+          value?.length || 0
+        }`,
+      );
       if (done) {
-        console.log(`[Socks5Handler] readBytes: поток закрыт, возвращаем ${offset} байт из ${count}`);
+        console.log(
+          `[Socks5Handler] readBytes: поток закрыт, возвращаем ${offset} байт из ${count}`,
+        );
         return result.slice(0, offset);
       }
       if (value) {
@@ -407,4 +674,3 @@ export class Socks5Handler {
     return result;
   }
 }
-

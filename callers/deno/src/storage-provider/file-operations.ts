@@ -2,8 +2,8 @@
  * Операции с файлами через Яндекс Диск API
  */
 
-import { YandexDiskApiError } from "./errors.ts";
-import type { FileInfo } from "./types.ts";
+import { YandexDiskApiError } from "@src/storage-provider/errors.ts";
+import type { FileInfo } from "@src/storage-provider/types.ts";
 
 /**
  * Преобразование элемента API в FileInfo
@@ -27,13 +27,15 @@ export function mapToFileInfo(item: {
  */
 export async function getOperationLink(
   response: Response,
-  operationType: "download" | "upload"
+  operationType: "download" | "upload",
 ): Promise<string> {
   const data = await response.json();
   if (!data.href) {
     throw new YandexDiskApiError(
-      `${operationType === "download" ? "Download" : "Upload"} link not found in API response`,
-      500
+      `${
+        operationType === "download" ? "Download" : "Upload"
+      } link not found in API response`,
+      500,
     );
   }
   return data.href;
@@ -45,18 +47,27 @@ export async function getOperationLink(
 export async function executeFileOperation(
   href: string,
   data: Uint8Array | null,
-  method: "GET" | "PUT"
+  method: "GET" | "PUT",
 ): Promise<Uint8Array | void> {
-  const options: RequestInit = { 
+  const headers: Record<string, string> = {};
+
+  if (method === "PUT" && data) {
+    headers["Content-Type"] = "application/octet-stream";
+  }
+
+  const options: RequestInit = {
     method,
+    headers,
     body: data as BodyInit | null,
   };
 
   const response = await fetch(href, options);
   if (!response.ok) {
     throw new YandexDiskApiError(
-      `Failed to ${method === "GET" ? "download" : "upload"} file: ${response.statusText}`,
-      response.status
+      `Failed to ${
+        method === "GET" ? "download" : "upload"
+      } file: ${response.statusText}`,
+      response.status,
     );
   }
 
@@ -65,4 +76,3 @@ export async function executeFileOperation(
     return new Uint8Array(arrayBuffer);
   }
 }
-

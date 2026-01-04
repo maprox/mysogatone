@@ -2,9 +2,9 @@
  * HTTP клиент с поддержкой retry и обработки ошибок
  */
 
-import { YandexDiskApiError } from "./errors.ts";
-import type { RetryConfig } from "./types.ts";
-import { sleep, calculateDelay } from "./utils.ts";
+import { YandexDiskApiError } from "@src/storage-provider/errors.ts";
+import type { RetryConfig } from "@src/storage-provider/types.ts";
+import { calculateDelay, sleep } from "@src/storage-provider/utils.ts";
 
 /**
  * Создание заголовков запроса с авторизацией
@@ -19,7 +19,9 @@ export function createAuthHeaders(accessToken: string): Headers {
 /**
  * Парсинг ошибки из ответа API
  */
-export async function parseApiError(response: Response): Promise<YandexDiskApiError> {
+export async function parseApiError(
+  response: Response,
+): Promise<YandexDiskApiError> {
   let errorMessage = `API request failed with status ${response.status}`;
   let errorCode: string | undefined;
 
@@ -61,7 +63,7 @@ export async function handleRateLimit(
   response: Response,
   attempt: number,
   delay: number,
-  config: RetryConfig
+  config: RetryConfig,
 ): Promise<number | null> {
   if (response.status !== 429 || attempt >= config.maxRetries) {
     return null;
@@ -71,7 +73,9 @@ export async function handleRateLimit(
   const newDelay = calculateDelay(delay, retryAfter, config);
 
   console.warn(
-    `Rate limit exceeded. Retrying after ${newDelay}ms (attempt ${attempt + 1}/${config.maxRetries})`
+    `Rate limit exceeded. Retrying after ${newDelay}ms (attempt ${
+      attempt + 1
+    }/${config.maxRetries})`,
   );
 
   await sleep(newDelay);
@@ -83,7 +87,7 @@ export async function handleRateLimit(
  */
 export async function executeRequest(
   url: string,
-  options: RequestInit
+  options: RequestInit,
 ): Promise<Response> {
   try {
     const response = await fetch(url, options);
@@ -96,12 +100,17 @@ export async function executeRequest(
 /**
  * Проверка, нужно ли делать retry для ошибки
  */
-export function shouldRetry(error: Error, attempt: number, maxRetries: number): boolean {
+export function shouldRetry(
+  error: Error,
+  attempt: number,
+  maxRetries: number,
+): boolean {
   if (attempt >= maxRetries) {
     return false;
   }
   // Retry для всех ошибок кроме некоторых критических
-  return error instanceof YandexDiskApiError && error.statusCode !== 401 && error.statusCode !== 403;
+  return error instanceof YandexDiskApiError && error.statusCode !== 401 &&
+    error.statusCode !== 403;
 }
 
 /**
@@ -110,7 +119,7 @@ export function shouldRetry(error: Error, attempt: number, maxRetries: number): 
 export async function executeWithRetry(
   url: string,
   options: RequestInit,
-  config: RetryConfig
+  config: RetryConfig,
 ): Promise<Response> {
   let lastError: Error | null = null;
   let delay = config.initialDelayMs;
@@ -126,7 +135,12 @@ export async function executeWithRetry(
 
       // Обработка rate limit (429)
       if (response.status === 429) {
-        const newDelay = await handleRateLimit(response, attempt, delay, config);
+        const newDelay = await handleRateLimit(
+          response,
+          attempt,
+          delay,
+          config,
+        );
         if (newDelay !== null) {
           delay = newDelay;
           continue;
@@ -145,7 +159,9 @@ export async function executeWithRetry(
 
       // Retry с exponential backoff
       console.warn(
-        `Request failed. Retrying after ${delay}ms (attempt ${attempt + 1}/${config.maxRetries})`
+        `Request failed. Retrying after ${delay}ms (attempt ${
+          attempt + 1
+        }/${config.maxRetries})`,
       );
       await sleep(delay);
       delay = calculateDelay(delay, null, config);
@@ -154,4 +170,3 @@ export async function executeWithRetry(
 
   throw lastError || new Error("Request failed after all retries");
 }
-

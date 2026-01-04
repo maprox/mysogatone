@@ -36,22 +36,22 @@ export function getConfigFromEnv(): ListenerConfig {
   if (!accessToken) {
     throw new Error(
       "YANDEX_DISK_TOKEN environment variable is required. " +
-        "Set it with: export YANDEX_DISK_TOKEN=your_token"
+        "Set it with: export YANDEX_DISK_TOKEN=your_token",
     );
   }
 
   return {
     accessToken,
     requestsFolder: Deno.env.get("REQUESTS_FOLDER") || ".mysogatone/requests",
-    responsesFolder: Deno.env.get("RESPONSES_FOLDER") || ".mysogatone/responses",
+    responsesFolder: Deno.env.get("RESPONSES_FOLDER") ||
+      ".mysogatone/responses",
     pollInterval: parseInt(
       Deno.env.get("POLL_INTERVAL_MS") || "2000",
-      10
+      10,
     ),
     connectionTimeout: parseInt(
       Deno.env.get("CONNECTION_TIMEOUT_MS") || "10000",
-      10
+      10,
     ),
   };
 }
-

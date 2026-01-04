@@ -4,7 +4,7 @@
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.211.0/assert/mod.ts";
 import { readRequestMetadata, readRequestData } from "@src/listener/request-reader.ts";
-import { ProtocolPaths } from "@shared/protocol/types.ts";
+import { ProtocolPaths } from "@shared/protocol/paths.ts";
 import type { RequestMetadata } from "@shared/protocol/types.ts";
 
 // Мок StorageProvider для тестирования
@@ -95,14 +95,20 @@ Deno.test("readRequestMetadata - выбрасывает ошибку при не
   );
 });
 
-Deno.test("readRequestData - читает данные запроса", async () => {
+Deno.test("readRequestData - читает данные запроса из чанков", async () => {
   const storageProvider = new MockStorageProvider();
   const protocolPaths = new ProtocolPaths("requests", "responses");
   const requestId = "test-request-id-4";
   
   const testData = new Uint8Array([1, 2, 3, 4, 5]);
-  const dataPath = protocolPaths.requestData(requestId);
-  storageProvider.files.set(dataPath, testData);
+  const chunkPath = protocolPaths.requestDataChunk(requestId, 0);
+  const readyPath = protocolPaths.requestDataReady(requestId);
+  
+  storageProvider.files.set(chunkPath, testData);
+  storageProvider.files.set(readyPath, new TextEncoder().encode(JSON.stringify({
+    totalChunks: 1,
+    totalBytes: 5,
+  })));
   
   const result = await readRequestData(requestId, storageProvider, protocolPaths, 1000, 100);
   
@@ -111,7 +117,7 @@ Deno.test("readRequestData - читает данные запроса", async ()
 });
 
 Deno.test({
-  name: "readRequestData - ожидает появления файла данных",
+  name: "readRequestData - ожидает появления файла готовности",
   sanitizeResources: false,
   sanitizeOps: false,
 }, async () => {
@@ -120,11 +126,16 @@ Deno.test({
   const requestId = "test-request-id-5";
   
   const testData = new Uint8Array([10, 20, 30]);
-  const dataPath = protocolPaths.requestData(requestId);
+  const chunkPath = protocolPaths.requestDataChunk(requestId, 0);
+  const readyPath = protocolPaths.requestDataReady(requestId);
   
-  // Задержка перед добавлением файла
+  // Задержка перед добавлением файлов
   setTimeout(() => {
-    storageProvider.files.set(dataPath, testData);
+    storageProvider.files.set(chunkPath, testData);
+    storageProvider.files.set(readyPath, new TextEncoder().encode(JSON.stringify({
+      totalChunks: 1,
+      totalBytes: 3,
+    })));
   }, 200);
   
   const result = await readRequestData(requestId, storageProvider, protocolPaths, 1000, 100);
@@ -134,7 +145,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "readRequestData - возвращает пустые данные при таймауте ожидания",
+  name: "readRequestData - возвращает пустые данные при таймауте ожидания файла готовности",
   sanitizeResources: false,
   sanitizeOps: false,
 }, async () => {
@@ -142,10 +153,33 @@ Deno.test({
   const protocolPaths = new ProtocolPaths("requests", "responses");
   const requestId = "test-request-id-6";
   
-  // Не добавляем файл данных
+  // Не добавляем файл готовности
   
   // Теперь функция возвращает пустые данные вместо ошибки при таймауте
   const result = await readRequestData(requestId, storageProvider, protocolPaths, 200, 50);
   assertEquals(result.length, 0);
+});
+
+Deno.test("readRequestData - читает данные из нескольких чанков", async () => {
+  const storageProvider = new MockStorageProvider();
+  const protocolPaths = new ProtocolPaths("requests", "responses");
+  const requestId = "test-request-id-7";
+  
+  const chunk0 = new Uint8Array([1, 2, 3]);
+  const chunk1 = new Uint8Array([4, 5, 6]);
+  const chunk2 = new Uint8Array([7, 8]);
+  
+  storageProvider.files.set(protocolPaths.requestDataChunk(requestId, 0), chunk0);
+  storageProvider.files.set(protocolPaths.requestDataChunk(requestId, 1), chunk1);
+  storageProvider.files.set(protocolPaths.requestDataChunk(requestId, 2), chunk2);
+  storageProvider.files.set(protocolPaths.requestDataReady(requestId), new TextEncoder().encode(JSON.stringify({
+    totalChunks: 3,
+    totalBytes: 8,
+  })));
+  
+  const result = await readRequestData(requestId, storageProvider, protocolPaths, 1000, 100);
+  
+  assertEquals(result.length, 8);
+  assertEquals(Array.from(result), [1, 2, 3, 4, 5, 6, 7, 8]);
 });
 

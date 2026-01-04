@@ -7,6 +7,61 @@
 
 ## [Unreleased]
 
+### Добавлено
+- Реализация Session Management для переиспользования TCP соединений в HTTPS запросах
+  - SessionManager для управления сессиями в CALLER и LISTENER
+  - Поддержка keep-alive сессий для HTTPS (порт 443)
+  - Ephemeral сессии для HTTP (порт 80)
+  - Автоматическая очистка неактивных сессий (таймаут 60 секунд)
+  - Переиспользование TCP соединений между запросами к одному серверу
+- DirectConnectionHandler для прямых TCP соединений с поддержкой сессий
+  - Используется для тестирования без файловой системы
+  - Позволяет проверить работу Session Management без задержек файловой системы
+- DelayedConnectionHandler для эмуляции задержек при отладке TLS handshake
+  - Эмулирует задержки, возникающие при работе через YandexDiskConnectionHandler
+  - Запись задержек в лог (delay-log.jsonl)
+  - Загрузка и применение задержек из лога
+  - Настройка задержек через переменные окружения
+  - Скрипты для анализа задержек (find-threshold, test-delay)
+- Система логирования (shared/logger/)
+  - FileLogger с записью в файл и stdout
+  - Поддержка уровней логирования (DEBUG, INFO, WARN, ERROR)
+  - Настройка через переменные окружения (CALLER_LOG_PATH, LISTENER_LOG_PATH, LOG_LEVEL)
+  - Адаптеры для console и shared логгера
+- Реорганизация структуры кода в yandex-disk-connection-handler
+  - request-creation/ - создание запросов (index.ts, types.ts)
+  - response-poller/ - polling ответов (index.ts, types.ts)
+  - streams/ - работа с потоками (index.ts, types.ts)
+  - session/ - управление сессиями (manager.ts, types.ts, utils.ts)
+- Конфигурация для CALLER Deno (config/)
+  - Парсинг переменных окружения
+  - Поддержка различных режимов работы (YandexDisk, Direct, Delayed)
+  - Настройка задержек через переменные окружения
+- Документация
+  - HTTPS_SESSION_TESTING.md - инструкция по тестированию Session Management
+  - QUICK_HTTPS_TEST.md - быстрый тест Session Management
+  - LOGGING.md - документация по системе логирования
+  - DELAYED_HANDLER.md - документация по DelayedConnectionHandler
+  - FIND_THRESHOLD.md - документация по поиску пороговых значений задержек
+  - SIMULATE_IDLE_CONNECTION.md - документация по эмуляции idle соединений
+  - TEST_TIMELINE.md - временная шкала тестирования
+- Скрипты для тестирования и анализа
+  - test-https-automated.ps1 - автоматизированное тестирование HTTPS
+  - find-threshold.ps1, find-threshold-simple.ps1 - поиск пороговых значений
+  - find-threshold-delay.ps1, find-threshold-delay-simple.ps1 - поиск задержек
+  - test-delay.ps1 - тестирование задержек
+
+### Изменено
+- Реорганизована структура модулей yandex-disk-connection-handler в отдельные директории
+- Улучшена обработка сессий в connection-handler для LISTENER
+- Обновлена структура метаданных запросов для поддержки Session Management
+- Улучшена обработка ошибок и логирование в storage-provider
+
+### Исправлено
+- Исправлена обработка TLS handshake через несколько раундов при переиспользовании сессий
+- Улучшена обработка потоков данных при работе с сессиями
+- Исправлена нормализация путей в ProtocolPaths
+
 ### Планируется
 - Реализация StorageProvider для CALLER Android
 - Оптимизация производительности

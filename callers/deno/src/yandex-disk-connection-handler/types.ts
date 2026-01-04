@@ -2,8 +2,9 @@
  * Типы и конфигурация для YandexDiskConnectionHandler
  */
 
-import type { StorageProvider } from "../storage-provider/index.ts";
-import type { ProtocolPaths } from "@shared/protocol/types.ts";
+import type { ProtocolPaths } from "@shared/protocol/paths.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
+import type { SessionManager } from "@src/yandex-disk-connection-handler/session/manager.ts";
 
 /**
  * Конфигурация для ConnectionHandler
@@ -17,5 +18,6 @@ export interface YandexDiskConnectionHandlerConfig {
   pollInterval: number;
   /** Таймаут ожидания ответа (в миллисекундах) */
   responseTimeout: number;
+  /** Менеджер сессий для поддержки постоянных соединений */
+  sessionManager?: SessionManager;
 }
-

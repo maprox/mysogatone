@@ -1,11 +1,12 @@
 /**
  * Скрипт для создания тестового запроса на Яндекс Диске
  * 
- * Создает файлы .req и .data для тестирования LISTENER
+ * Создает файлы .req, .chunk.N и .ready для тестирования LISTENER
  */
 
 import { YandexDiskProvider } from "@src/storage-provider/index.ts";
-import { ProtocolPaths, RequestMetadata } from "@shared/protocol/types.ts";
+import { RequestMetadata } from "@shared/protocol/types.ts";
+import { ProtocolPaths } from "@shared/protocol/paths.ts";
 import { generateRequestId } from "@shared/protocol/utils.ts";
 import { ensureFoldersExist } from "@src/listener/folder-manager.ts";
 
@@ -51,9 +52,23 @@ async function createTestRequest(
   await provider.uploadFile(metadataPath, new TextEncoder().encode(JSON.stringify(metadata, null, 2)));
   console.log(`✅ Метаданные загружены`);
 
-  // Загружаем файл данных
-  await provider.uploadFile(protocolPaths.requestData(requestId), requestData);
-  console.log(`✅ Данные загружены (${requestData.length} байт)`);
+  // Загружаем данные в новом формате (чанки + .ready)
+  if (requestData.length > 0) {
+    // Загружаем данные как один чанк
+    const chunkPath = protocolPaths.requestDataChunk(requestId, 0);
+    await provider.uploadFile(chunkPath, requestData);
+    console.log(`✅ Чанк #0 загружен (${requestData.length} байт)`);
+  }
+
+  // Создаем файл .ready с метаданными
+  const readyPath = protocolPaths.requestDataReady(requestId);
+  const readyInfo = {
+    totalChunks: requestData.length > 0 ? 1 : 0,
+    totalBytes: requestData.length,
+  };
+  const readyData = new TextEncoder().encode(JSON.stringify(readyInfo));
+  await provider.uploadFile(readyPath, readyData);
+  console.log(`✅ Файл готовности создан (${readyInfo.totalChunks} чанков, ${readyInfo.totalBytes} байт)`);
 
   console.log(`\n✅ Тестовый запрос создан успешно!`);
   console.log(`📋 RequestId: ${requestId}`);

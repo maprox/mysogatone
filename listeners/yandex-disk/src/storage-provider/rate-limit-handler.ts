@@ -2,8 +2,8 @@
  * Обработка rate limit (429)
  */
 
-import type { RetryConfig } from "./types.ts";
-import { sleep, calculateDelay } from "./utils.ts";
+import type { RetryConfig } from "@src/storage-provider/types.ts";
+import { calculateDelay, sleep } from "@src/storage-provider/utils.ts";
 
 /**
  * Обработка rate limit (429)
@@ -12,7 +12,7 @@ export async function handleRateLimit(
   response: Response,
   attempt: number,
   delay: number,
-  config: RetryConfig
+  config: RetryConfig,
 ): Promise<number | null> {
   if (response.status !== 429 || attempt >= config.maxRetries) {
     return null;
@@ -22,10 +22,11 @@ export async function handleRateLimit(
   const newDelay = calculateDelay(delay, retryAfter, config);
 
   console.warn(
-    `Rate limit exceeded. Retrying after ${newDelay}ms (attempt ${attempt + 1}/${config.maxRetries})`
+    `Rate limit exceeded. Retrying after ${newDelay}ms (attempt ${
+      attempt + 1
+    }/${config.maxRetries})`,
   );
 
   await sleep(newDelay);
   return newDelay;
 }
-

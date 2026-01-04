@@ -14,6 +14,12 @@ export interface RequestMetadata {
   targetPort: number;
   /** Unix timestamp создания запроса (опционально) */
   timestamp?: number;
+  /** Уникальный идентификатор сессии (UUID v4) - для поддержки постоянных соединений */
+  sessionId?: string;
+  /** Является ли это первым запросом в сессии */
+  isFirstInSession?: boolean;
+  /** Сохранять ли сессию после обработки ответа (для HTTPS, WebSocket и т.д.) */
+  keepSessionAlive?: boolean;
 }
 
 /**
@@ -38,42 +44,4 @@ export enum ErrorCode {
   TIMEOUT = "TIMEOUT",
   INVALID_REQUEST = "INVALID_REQUEST",
   STORAGE_ERROR = "STORAGE_ERROR",
-}
-
-/**
- * Пути к файлам протокола
- */
-export class ProtocolPaths {
-  constructor(
-    private requestsFolder: string = "requests",
-    private responsesFolder: string = "responses"
-  ) {}
-
-  /**
-   * Путь к файлу метаданных запроса
-   */
-  requestMetadata(requestId: string): string {
-    return `${this.requestsFolder}/${requestId}.req`;
-  }
-
-  /**
-   * Путь к файлу данных запроса
-   */
-  requestData(requestId: string): string {
-    return `${this.requestsFolder}/${requestId}.data`;
-  }
-
-  /**
-   * Путь к файлу ответа
-   */
-  response(requestId: string): string {
-    return `${this.responsesFolder}/${requestId}.resp`;
-  }
-
-  /**
-   * Путь к файлу ошибки
-   */
-  error(requestId: string): string {
-    return `${this.responsesFolder}/${requestId}.error`;
-  }
 }

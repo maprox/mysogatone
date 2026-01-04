@@ -3,7 +3,7 @@
  * Используется для тестирования SOCKS5 сервера.
  */
 
-import type { ConnectionHandler } from "./connection-handler.ts";
+import type { ConnectionHandler } from "@src/connection-handler.ts";
 
 /**
  * Реализация ConnectionHandler через прямое TCP соединение.
@@ -11,8 +11,13 @@ import type { ConnectionHandler } from "./connection-handler.ts";
 export class DefaultConnectionHandler implements ConnectionHandler {
   async connect(
     targetAddress: string,
-    targetPort: number
-  ): Promise<{ reader: ReadableStreamDefaultReader<Uint8Array>; writer: WritableStreamDefaultWriter<Uint8Array> }> {
+    targetPort: number,
+  ): Promise<
+    {
+      reader: ReadableStreamDefaultReader<Uint8Array>;
+      writer: WritableStreamDefaultWriter<Uint8Array>;
+    }
+  > {
     const conn = await Deno.connect({
       hostname: targetAddress,
       port: targetPort,
@@ -24,4 +29,3 @@ export class DefaultConnectionHandler implements ConnectionHandler {
     };
   }
 }
-

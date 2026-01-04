@@ -2,12 +2,15 @@
  * Обработка запросов LISTENER
  */
 
-import type { StorageProvider } from "@src/storage-provider/index.ts";
-import type { ConnectionHandler } from "@src/connection-handler.ts";
-import type { ProtocolPaths } from "@shared/protocol/types.ts";
+import type { ProtocolPaths } from "@shared/protocol/paths.ts";
 import { isRequestMetadata, parseRequestId } from "@shared/protocol/utils.ts";
-import { readRequestMetadata, readRequestData } from "./request-reader.ts";
-import { cleanupRequest } from "./request-cleanup.ts";
+import type { ConnectionHandler } from "@src/connection-handler.ts";
+import { cleanupRequest } from "@src/listener/request-cleanup.ts";
+import {
+  readRequestDataStream,
+  readRequestMetadata,
+} from "@src/listener/request-reader.ts";
+import type { StorageProvider } from "@src/storage-provider/index.ts";
 
 /**
  * Параметры для обработки запроса
@@ -20,14 +23,17 @@ export interface ProcessRequestParams {
 }
 
 // Реэкспортируем функции для обратной совместимости
-export { readRequestMetadata, readRequestData } from "./request-reader.ts";
-export { cleanupRequest } from "./request-cleanup.ts";
+export { cleanupRequest } from "@src/listener/request-cleanup.ts";
+export {
+  readRequestData,
+  readRequestMetadata,
+} from "@src/listener/request-reader.ts";
 
 /**
  * Обрабатывает запрос согласно протоколу
  */
 export async function processRequest(
-  params: ProcessRequestParams
+  params: ProcessRequestParams,
 ): Promise<void> {
   const {
     requestId,
@@ -43,29 +49,28 @@ export async function processRequest(
   const metadata = await readRequestMetadata(
     requestId,
     storageProvider,
-    protocolPaths
+    protocolPaths,
   );
 
   console.log(
-    `[processRequest] ✅ Метаданные прочитаны: ${metadata.targetAddress}:${metadata.targetPort}`
+    `[processRequest] ✅ Метаданные прочитаны: ${metadata.targetAddress}:${metadata.targetPort}`,
   );
 
-  // Читаем данные запроса
-  console.log(`[processRequest] Чтение данных для ${requestId}...`);
-  const requestData = await readRequestData(
+  // Читаем данные запроса потоково для отправки на GOAL
+  console.log(
+    `[processRequest] Чтение данных для ${requestId} (потоковый режим)...`,
+  );
+  const requestDataStream = readRequestDataStream(
     requestId,
     storageProvider,
-    protocolPaths
+    protocolPaths,
   );
 
-  console.log(`[processRequest] ✅ Данные прочитаны: ${requestData.length} байт`);
-  console.log(`[processRequest] 📄 Первые 100 байт данных: ${new TextDecoder().decode(requestData.slice(0, 100))}`);
-
-  // Обрабатываем подключение
+  // Обрабатываем подключение с потоковыми данными
   console.log(`[processRequest] 🔌 Вызов handleConnection для ${requestId}...`);
   await connectionHandler.handleConnection({
     ...metadata,
-    requestData,
+    requestData: requestDataStream,
   });
 
   console.log(`[processRequest] ✅ handleConnection завершен для ${requestId}`);
@@ -80,13 +85,15 @@ export async function processRequest(
  * Извлекает requestId из пути к файлу и проверяет, что это файл метаданных
  */
 export function extractRequestIdFromPath(
-  filePath: string
+  filePath: string,
 ): string | null {
   console.log(`[extractRequestIdFromPath] Проверка пути: ${filePath}`);
-  
+
   // Проверяем, что это файл метаданных запроса
   if (!isRequestMetadata(filePath)) {
-    console.log(`[extractRequestIdFromPath] Файл не является .req файлом: ${filePath}`);
+    console.log(
+      `[extractRequestIdFromPath] Файл не является .req файлом: ${filePath}`,
+    );
     return null;
   }
 
@@ -98,7 +105,9 @@ export function extractRequestIdFromPath(
   // Извлекаем requestId из имени файла
   const requestId = parseRequestId(filename);
   if (!requestId) {
-    console.warn(`⚠️  Не удалось извлечь requestId из ${filePath} (filename: ${filename})`);
+    console.warn(
+      `⚠️  Не удалось извлечь requestId из ${filePath} (filename: ${filename})`,
+    );
     return null;
   }
 

@@ -6,7 +6,7 @@
  * Настраивает обработчики сигналов для graceful shutdown
  */
 export function setupSignalHandlers(
-  onShutdown: () => Promise<void>
+  onShutdown: () => Promise<void>,
 ): void {
   // Обработка SIGINT (Ctrl+C)
   Deno.addSignalListener("SIGINT", async () => {
@@ -25,4 +25,3 @@ export function setupSignalHandlers(
     // На Windows это нормально
   }
 }
-
