@@ -10,7 +10,6 @@ import { RequestMetadata } from "@shared/protocol/types.ts";
 import { handleConnectionError } from "@src/connection/error-handler.ts";
 import { readResponse } from "@src/connection/response-reader.ts";
 import { connectWithTimeout } from "@src/connection/tcp-connection.ts";
-import type { TcpConn, NetAddr } from "@src/connection/types.ts";
 import type { SessionManager } from "@src/listener/session/manager.ts";
 import { decodeAllTLSRecords } from "@src/listener/utils.ts";
 import type { StorageProvider } from "@src/storage-provider/index.ts";
@@ -92,7 +91,7 @@ export class ConnectionHandler {
       );
     }
 
-    let conn: TcpConn | null = null;
+    let conn: Deno.TcpConn | null = null;
     const sessionId: string | undefined = request.sessionId;
 
     try {
@@ -296,7 +295,7 @@ export class ConnectionHandler {
 
             // Проверяем состояние соединения после отправки
             try {
-              const remoteAddr = connection.remoteAddr as NetAddr;
+              const remoteAddr = connection.remoteAddr as Deno.NetAddr;
               logger.info(
                 `[${request.requestId}] [${streamEndTime}] 🔌 Состояние соединения после отправки: ${remoteAddr.hostname}:${remoteAddr.port}, активно`,
               );
@@ -338,7 +337,7 @@ export class ConnectionHandler {
 
             // Проверяем состояние соединения после отправки
             try {
-              const remoteAddr = connection.remoteAddr as NetAddr;
+              const remoteAddr = connection.remoteAddr as Deno.NetAddr;
               logger.info(
                 `[${request.requestId}] [${arraySendEndTime}] 🔌 Состояние соединения после отправки: ${remoteAddr.hostname}:${remoteAddr.port}, активно`,
               );
@@ -435,7 +434,7 @@ export class ConnectionHandler {
 
       // Проверяем состояние соединения перед чтением ответа
       try {
-        const remoteAddr = conn.remoteAddr as NetAddr;
+        const remoteAddr = conn.remoteAddr as Deno.NetAddr;
         logger.info(
           `[${request.requestId}] [${readStartTime}] 🔌 Проверка соединения перед чтением: ${remoteAddr.hostname}:${remoteAddr.port}`,
         );

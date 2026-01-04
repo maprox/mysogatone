@@ -3,7 +3,6 @@
  */
 
 import type { Logger } from "@shared/logger/types.ts";
-import type { TcpConn } from "@src/connection/types.ts";
 import type { SessionInfo as BaseSessionInfo } from "@src/yandex-disk-connection-handler/session/types.ts";
 
 /**
@@ -30,9 +29,9 @@ export interface SessionManager {
  */
 export interface ConnectionStore {
   /** Сохраняет соединение для указанной сессии */
-  set(sessionId: string, connection: TcpConn): void;
+  set(sessionId: string, connection: Deno.TcpConn): void;
   /** Получает соединение для указанной сессии */
-  get(sessionId: string): TcpConn | undefined;
+  get(sessionId: string): Deno.TcpConn | undefined;
   /** Проверяет, существует ли соединение для указанной сессии */
   has(sessionId: string): boolean;
   /** Закрывает соединение для указанной сессии */
@@ -53,7 +52,7 @@ export interface ConnectionFactory {
   create(
     targetAddress: string,
     targetPort: number,
-  ): Promise<TcpConn>;
+  ): Promise<Deno.TcpConn>;
 }
 
 /**

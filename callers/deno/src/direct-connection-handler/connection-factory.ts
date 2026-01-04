@@ -3,8 +3,6 @@
  * Отвечает за установку нового TCP соединения с целевым сервером.
  */
 
-import type { TcpConn } from "@src/connection/types.ts";
-
 import type {
   ConnectionFactory as ConnectionFactoryInterface,
   Logger,
@@ -22,7 +20,7 @@ export class ConnectionFactory implements ConnectionFactoryInterface {
   async create(
     targetAddress: string,
     targetPort: number,
-  ): Promise<TcpConn> {
+  ): Promise<Deno.TcpConn> {
     this.logger.debug(
       `Создание TCP соединения к ${targetAddress}:${targetPort}`,
     );

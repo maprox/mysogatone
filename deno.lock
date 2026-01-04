@@ -1,0 +1,11 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@ganitzsh/lint-import-order@*": "0.1.0"
+  },
+  "jsr": {
+    "@ganitzsh/lint-import-order@0.1.0": {
+      "integrity": "25b20d3ba21622c3ef3582fbcff424716329f002bddee4ae291d6d419f753a85"
+    }
+  }
+}

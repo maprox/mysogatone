@@ -3,7 +3,6 @@
  */
 
 import { getLogger } from "@shared/logger/file-logger.ts";
-import type { TcpConn, NetAddr } from "@src/connection/types.ts";
 
 /**
  * Читает ответ от TCP соединения с таймаутом
@@ -15,7 +14,7 @@ import type { TcpConn, NetAddr } from "@src/connection/types.ts";
  * Следующие ответы будут прочитаны при обработке следующих запросов в той же сессии.
  */
 export async function readResponse(
-  conn: TcpConn,
+  conn: Deno.TcpConn,
   readTimeout: number = 5000,
 ): Promise<Uint8Array> {
   const logger = getLogger();
@@ -26,7 +25,7 @@ export async function readResponse(
 
   // Проверяем состояние соединения перед чтением
   try {
-    const remoteAddr = conn.remoteAddr as NetAddr;
+    const remoteAddr = conn.remoteAddr as Deno.NetAddr;
     logger.info(
       `[readResponse] [${Date.now()}] 🔌 TCP соединение: ${remoteAddr.hostname}:${remoteAddr.port}, состояние: активно`,
     );

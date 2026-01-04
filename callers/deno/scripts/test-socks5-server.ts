@@ -9,13 +9,11 @@
  *    deno run --allow-net scripts/test-socks5-server.ts
  */
 
-import type { TcpConn } from "../src/connection/types.ts";
-
 /**
  * SOCKS5 клиент для тестирования сервера
  */
 class Socks5TestClient {
-  private conn: TcpConn | null = null;
+  private conn: Deno.TcpConn | null = null;
 
   /**
    * Подключается к SOCKS5 серверу
@@ -101,7 +99,7 @@ class Socks5TestClient {
     // Для IPv4: минимум 10 байт (4 байта адреса)
     const responseBuffer = new Uint8Array(256);
     let totalRead = 0;
-    let minBytesRead = 4; // Минимум для проверки версии и кода ответа
+    const minBytesRead = 4; // Минимум для проверки версии и кода ответа
     
     // Читаем минимум 4 байта для проверки версии и кода ответа
     console.log(`📥 Ожидание ответа CONNECT (минимум ${minBytesRead} байт)...`);
