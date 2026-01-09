@@ -13,7 +13,9 @@ export class DelayLogParserImpl implements DelayLogParser {
   async parse(logPath: string): Promise<DelayConfig> {
     try {
       const logContent = await Deno.readTextFile(logPath);
-      const lines = logContent.trim().split("\n").filter((line: string) => line.trim());
+      const lines = logContent.trim().split("\n").filter((line: string) =>
+        line.trim()
+      );
 
       const delays: {
         chunkInterval: number[];

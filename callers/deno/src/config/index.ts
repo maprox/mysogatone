@@ -22,7 +22,6 @@ export function parseAppConfig(): AppConfig {
     Deno.env.get("RESPONSE_TIMEOUT_MS") || "60000",
     10,
   );
-  const useDirectHandler = Deno.env.get("USE_DIRECT_HANDLER") === "true";
   const useDelayedHandler = Deno.env.get("USE_DELAYED_HANDLER") === "true";
   const delayLogPath = Deno.env.get("DELAY_LOG_PATH") || "delay-log.jsonl";
 
@@ -33,7 +32,6 @@ export function parseAppConfig(): AppConfig {
     responsesFolder,
     pollInterval,
     responseTimeout,
-    useDirectHandler,
     useDelayedHandler,
     delayLogPath,
   };

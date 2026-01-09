@@ -73,8 +73,11 @@ check_deno_project() {
             fi
             # Проверяем тесты, если они есть
             if [ -d "tests" ] && [ "$(ls -A tests 2>/dev/null)" ]; then
+                echo "  → Проверка типов в тестах..."
+                set +e  # Отключаем немедленный выход при ошибке
                 TEST_TYPE_CHECK_OUTPUT=$(deno check tests/ 2>&1)
                 TEST_TYPE_CHECK_EXIT=$?
+                set -e  # Включаем обратно
                 if [ $TEST_TYPE_CHECK_EXIT -ne 0 ]; then
                     echo "${RED}  ✗ Обнаружены ошибки типов в тестах $project_name${NC}"
                     echo "$TEST_TYPE_CHECK_OUTPUT"
