@@ -47,7 +47,8 @@ export class Socks5Handler {
 
       // Этап 1: Handshake
       logger.info("[Socks5Handler] Начало handshake...");
-      if (!(await this.handleHandshake(reader, writer))) {
+      const isHandshakeSuccessful = await this.handleHandshake(reader, writer);
+      if (!isHandshakeSuccessful) {
         logger.info("[Socks5Handler] Handshake не удался");
         return;
       }

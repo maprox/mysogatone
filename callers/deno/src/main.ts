@@ -12,7 +12,6 @@ import {
   parseAppConfig,
   parseDelayEnvConfig,
 } from "@src/config/index.ts";
-import { DefaultConnectionHandler } from "@src/default-connection-handler.ts";
 import { createDelayedConnectionHandler } from "@src/delayed-connection-handler/factory.ts";
 import { createDirectConnectionHandler } from "@src/direct-connection-handler/factory.ts";
 import { Socks5Server } from "@src/socks5-server.ts";
@@ -63,13 +62,6 @@ async function main(): Promise<void> {
         : undefined, // Загружаем из лога только если не заданы явные задержки
       delays: manualDelays, // Всегда передаем, даже если пустой
     });
-  } else if (config.useDirectHandler) {
-    logger.info(
-      "Используется DirectConnectionHandler (прямое TCP соединение с поддержкой сессий).",
-    );
-    connectionHandler = createDirectConnectionHandler({
-      sessionManager,
-    });
   } else if (config.accessToken) {
     logger.info("Используется YandexDiskProvider для ConnectionHandler.");
     const storageProvider = new YandexDiskProvider(config.accessToken);
@@ -87,9 +79,11 @@ async function main(): Promise<void> {
     });
   } else {
     logger.info(
-      "YANDEX_DISK_TOKEN не найден. Используется DefaultConnectionHandler.",
+      "YANDEX_DISK_TOKEN не найден. Используется DirectConnectionHandler.",
     );
-    connectionHandler = new DefaultConnectionHandler();
+    connectionHandler = createDirectConnectionHandler({
+      sessionManager,
+    });
   }
 
   const server = new Socks5Server(config.port, connectionHandler);

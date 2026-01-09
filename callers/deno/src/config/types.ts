@@ -18,8 +18,6 @@ export interface AppConfig {
   pollInterval: number;
   /** Таймаут ответа (мс) */
   responseTimeout: number;
-  /** Использовать DirectConnectionHandler */
-  useDirectHandler: boolean;
   /** Использовать DelayedConnectionHandler */
   useDelayedHandler: boolean;
   /** Путь к логу задержек */
