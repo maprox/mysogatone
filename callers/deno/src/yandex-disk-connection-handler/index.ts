@@ -6,7 +6,7 @@
 
 import { generateRequestId } from "@shared/protocol/utils.ts";
 
-import type { ConnectionHandler } from "@src/connection-handler.ts";
+import type { ConnectionHandler } from "@src/types.ts";
 import { createRequestMetadata } from "@src/yandex-disk-connection-handler/request-creation/index.ts";
 import { createStreams } from "@src/yandex-disk-connection-handler/streams/index.ts";
 import type { YandexDiskConnectionHandlerConfig } from "@src/yandex-disk-connection-handler/types.ts";

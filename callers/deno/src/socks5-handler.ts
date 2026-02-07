@@ -3,7 +3,7 @@
  */
 
 import { getLogger } from "@shared/logger/file-logger.ts";
-import type { ConnectionHandler } from "@src/connection-handler.ts";
+import type { ConnectionHandler } from "@src/types.ts";
 
 /**
  * SOCKS5 константы

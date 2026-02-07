@@ -6,7 +6,7 @@
  * что позволяет проверить, является ли задержка файловой системы причиной проблем с TLS handshake.
  */
 
-import type { ConnectionHandler } from "@src/connection-handler.ts";
+import type { ConnectionHandler } from "@src/types.ts";
 
 import type {
   ConnectionFactory,
