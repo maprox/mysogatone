@@ -3,8 +3,8 @@
  * Принимает входящие соединения и обрабатывает их через Socks5Handler.
  */
 
-import type { ConnectionHandler } from "@src/connection-handler.ts";
 import { Socks5Handler } from "@src/socks5-handler.ts";
+import type { ConnectionHandler } from "@src/types.ts";
 
 /**
  * SOCKS5 сервер.

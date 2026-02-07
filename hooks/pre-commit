@@ -28,7 +28,9 @@ ORIGINAL_DIR=$(pwd)
 check_deno_project() {
     local project_dir=$1
     local project_name=$2
-    
+
+    set +e  # Отключаем немедленный выход при ошибке
+
     # Проверяем, есть ли изменения в этом проекте
     if echo "$CHANGED_FILES" | grep -q "^$project_dir"; then
         echo "${YELLOW}Проверка проекта: $project_name${NC}"
@@ -74,10 +76,8 @@ check_deno_project() {
             # Проверяем тесты, если они есть
             if [ -d "tests" ] && [ "$(ls -A tests 2>/dev/null)" ]; then
                 echo "  → Проверка типов в тестах..."
-                set +e  # Отключаем немедленный выход при ошибке
                 TEST_TYPE_CHECK_OUTPUT=$(deno check tests/ 2>&1)
                 TEST_TYPE_CHECK_EXIT=$?
-                set -e  # Включаем обратно
                 if [ $TEST_TYPE_CHECK_EXIT -ne 0 ]; then
                     echo "${RED}  ✗ Обнаружены ошибки типов в тестах $project_name${NC}"
                     echo "$TEST_TYPE_CHECK_OUTPUT"
@@ -93,11 +93,8 @@ check_deno_project() {
                 # Используем deno task test для правильной передачи флагов разрешений
                 # Важно: НЕ используйте deno test напрямую без флагов!
                 # Запускаем тесты и захватываем вывод и код выхода
-                set +e  # Отключаем немедленный выход при ошибке
                 TEST_OUTPUT=$(deno task test 2>&1)
                 TEST_EXIT=$?
-                set -e  # Включаем обратно
-                
                 # Проверяем код выхода команды
                 if [ $TEST_EXIT -ne 0 ]; then
                     echo "${RED}  ✗ Тесты не прошли в $project_name (код выхода: $TEST_EXIT)${NC}"
@@ -118,6 +115,8 @@ check_deno_project() {
         
         cd "$ORIGINAL_DIR" || exit 1
     fi
+
+    set -e  # Включаем немедленный выход при ошибке обратно
 }
 
 # Проверка Kotlin проекта

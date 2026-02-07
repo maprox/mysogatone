@@ -3,8 +3,9 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { Socks5Handler } from "../src/socks5-handler.ts";
-import type { ConnectionHandler } from "../src/connection-handler.ts";
+
+import { Socks5Handler } from "@src/socks5-handler.ts";
+import type { ConnectionHandler } from "@src/types.ts";
 
 /**
  * Мок ConnectionHandler для тестирования

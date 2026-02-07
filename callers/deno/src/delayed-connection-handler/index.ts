@@ -5,7 +5,7 @@
  * чтобы выяснить на каком этапе TLS handshake происходит обрыв соединения.
  */
 
-import type { ConnectionHandler } from "@src/connection-handler.ts";
+import type { ConnectionHandler } from "@src/types.ts";
 
 import type {
   ConnectionFactory,

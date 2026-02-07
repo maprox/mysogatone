@@ -89,7 +89,6 @@ export function createStreams(
   let responseReceived = false; // Флаг, что был получен ответ
   let pendingDataAfterResponse: Uint8Array[] = []; // Данные, полученные после ответа
   let currentRequestId = initialRequestId;
-  let _activePolling = false; // Флаг активного polling
 
   // Временные метки для отслеживания интервалов между шагами
   let firstChunkTime: number | null = null; // Время получения первого чанка
@@ -114,8 +113,6 @@ export function createStreams(
 
       // Для HTTPS продолжаем polling в цикле для множественных раундов
       if (keepSessionAlive) {
-        _activePolling = true;
-
         // Цикл для обработки множественных раундов
         while (!readerClosed) {
           const reqId = currentRequestId;
@@ -379,10 +376,8 @@ export function createStreams(
             break;
           }
         }
-        _activePolling = false;
       } else {
         // Для не-HTTPS - один ответ и закрытие
-        _activePolling = true;
         try {
           await pollForResponse(
             currentRequestId,
@@ -417,7 +412,6 @@ export function createStreams(
           controller.error(err instanceof Error ? err : new Error(String(err)));
           readerClosed = true;
         }
-        _activePolling = false;
       }
     },
     cancel() {
@@ -425,7 +419,6 @@ export function createStreams(
         `[createStreams] Reader отменен для ${initialRequestId} (клиент закрыл соединение)`,
       );
       readerClosed = true;
-      _activePolling = false;
     },
   }).getReader();
 
